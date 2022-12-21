@@ -1,5 +1,6 @@
-from drupal_logger import log
 from drupal_configuration import DrupalConfig, DC
+from drupal_logger import log
+from os.path import isfile, expanduser, join
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -10,16 +11,25 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager 
+import configparser
+import os.path
 import urllib.parse
+DEFAULT_CREDENTIALS_DIRECTORY:str = "~/.drupal"
+DEFAULT_CREDENTIALS_FILENAME:str = "credentials.ini"
+DEFAULT_CREDENTIALS_GROUP:str = "default"
+
+
 
 class Browser():
 	"The Browser class represents a class that loads pages via its get() attribute and that can retrieve values from elements and set values in elements"
 
 
-	def __init__(self):
-		self._url_home = DC.get('server.proto') + DC.get('server.url') + DC.get('server.default_language_uri_prefix')
+	def __init__(self, credentials_file:str = expanduser(os.path.join(DEFAULT_CREDENTIALS_DIRECTORY, DEFAULT_CREDENTIALS_FILENAME)), credentials_group: str = DEFAULT_CREDENTIALS_GROUP):
+		self._credentials_file = credentials_file
+		self._credentials_group = credentials_group
 		self._url = ''
-		self._languages = DC.get('server.languages')
+		self.ini_data = {}
+		self._read_credentials_file()
 		options = Options();
 		for option in DC.get('selenium.options'):
 			options.add_argument(option)
@@ -187,6 +197,53 @@ class Browser():
 		else:
 			log.debug(f"[Browser._find_elements()] Found a total of {len(elements)} elements.")
 			return elements, ''
+
+
+	def _read_credentials_file(self):
+		"This attribute reads the credentials.ini file and "
+		if(not isfile(self._credentials_file)):
+			log.debug(f"[Browser._read_credentials_file()] Couldn't find credentials file '{self._credentials_file}'")
+			self._credentials_file = expanduser(os.path.join("~", DEFAULT_CREDENTIALS_FILENAME))
+		else:
+			log.debug(f"[Browser._read_credentials_file()] Found credential file '{self._credentials_file}'")			
+		if(not isfile(self._credentials_file)):
+			self._credentials_file =  os.path.join(".", DEFAULT_CREDENTIALS_FILENAME)
+		if(not isfile(self._credentials_file)):
+			log.debug("[Browser._read_credentials_file()] Couldn't find a credential file")
+			return
+		config = configparser.ConfigParser()
+		try:
+			config.read(self._credentials_file)
+			log.info(f"[Browser._read_credentials_file()] Read credential file '{self._credentials_file}'")
+		except:
+			log.fatal(f"[Browser._read_credentials_file()] Failed to read credentials file '{self._credentials_file}' despite its existance.", 1)
+		log.debug(f"[Browser._read_credentials_file()] Trying to read credential file section '{self._credentials_file}'")		
+		try:
+			self.ini_data['url'] = config.get(self._credentials_group, 'url')
+			log.debug(f"[Browser._read_credentials_file()] Read url={self.ini_data['url']} attribute from credential file section '{self._credentials_group}'")
+		except:
+			log.debug(f"[Browser._read_credentials_file()] No 'url' attribute in credential file section '{self._credentials_group}'")
+		try:
+			self.ini_data['username'] = config.get(self._credentials_group, 'username')
+			log.debug(f"[Browser._read_credentials_file()] Read username={self.ini_data['username']} attribute from credential file section '{self._credentials_group}'")
+		except:
+			log.debug(f"[Browser._read_credentials_file()] No 'username' attribute in credential file section '{self._credentials_group}'")
+		try:
+			self.ini_data['password'] = config.get(self._credentials_group, 'password')
+			log.debug(f"[Browser._read_credentials_file()] Read password=******** attribute from credential file section '{self._credentials_group}'")
+		except:
+			log.debug(f"[Browser._read_credentials_file()] No 'password' attribute in credential file section '{self._credentials_group}'")
+		try:
+			self.ini_data['basic_authentication_username'] = config.get(self._credentials_group, 'basic_authentication_username')
+			log.debug(f"[Browser._read_credentials_file()] Read basic_authentication_username={self.ini_data['basic_authentication_username']} attribute from credential file section '{self._credentials_group}'")
+		except:
+			log.debug(f"[Browser._read_credentials_file()] No 'basic_authentication_username' attribute in credential file section '{self._credentials_group}'")
+		try:
+			self.ini_data['basic_authentication_password'] = config.get(self._credentials_group, 'basic_authentication_password')
+			log.debug(f"[Browser._read_credentials_file()] Read basic_authentication_password={self.ini_data['basic_authentication_password']} attribute from credential file section '{self._credentials_group}'")
+		except:
+			log.debug(f"[Browser._read_credentials_file()] No 'basic_authentication_password' attribute in credential file section '{self._credentials_group}'")
+
 
 
 	def close(self):
