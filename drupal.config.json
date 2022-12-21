@@ -1,0 +1,537 @@
+{
+    "selenium":
+    {
+        "options":
+        [
+            "ignore-certificate-errors",
+            "--window-size=1920,1080"
+        ]
+    },
+    "server":
+    {
+        "proto": "https://",
+        "default_language_uri_prefix": "/en-int",
+        "login_uri": "/user/login",
+        "default_language": "en-int",
+        "root_language": "en-int",
+        "languages":
+        [
+            "en-int",
+            "en",
+            "de",
+            "es",
+            "fr",
+            "it",
+            "ja",
+            "ko",
+            "pl",
+            "ru",
+            "zh",
+            "de-AT",
+            "de-CH",
+            "de-DE",
+            "en-AE",
+            "en-AU",
+            "en-CA",
+            "en-GB",
+            "en-MY",
+            "en-NZ",
+            "en-SG",
+            "en-US",
+            "es-ES",
+            "es-MX",
+            "fr-CH",
+            "fr-FR",
+            "it-IT",
+            "ja-JP",
+            "ko-KR",
+            "pl-PL",
+            "ru-RU",
+            "zh-Hans",
+            "zh-Hant"
+        ],
+        "language_display_names":
+        {
+            "Chinese": "zh",
+            "English - Australia": "en-AU",
+            "English - Canada": "en-CA",
+            "English - Great Britain": "en-GB",
+            "English - Malaysia": "en-MY",
+            "English - New Zealand": "en-NZ",
+            "English - Singapore": "en-SG",
+            "English - United Arab Emirates": "en-AE",
+            "English - USA  ": "en-US",
+            "English international (Original language)": "en-int",
+            "English international": "en-int",
+            "English": "en",
+            "French - France": "fr-FR",
+            "French - Switzerland": "fr-CH",
+            "French": "fr",
+            "German - Austria": "de-AT",
+            "German - Germany": "de-DE",
+            "German - Switzerland": "de-CH",
+            "German": "de",
+            "Italian - Italy": "it-IT",
+            "Italian": "it",
+            "Japanese - Japan": "ja-JP",
+            "Japanese": "ja",
+            "Korean - Korea": "ko-KR",
+            "Korean": "ko",
+            "Polish - Poland": "pl-PL",
+            "Polish": "pl",
+            "Russia - Russian": "ru-RU",
+            "Russian": "ru",
+            "Simplified Chinese - China": "zh-Hans",
+            "Spanish - Mexico": "es-MX",
+            "Spanish - Spain": "es-ES",
+            "Spanish": "es",
+            "Traditional Chinese - China": "zh-Hant"
+        },
+        "language_hierarchy":
+        {
+            "en-INT":
+            {
+                "en":
+                [
+                    "en-AE",
+                    "en-AU",
+                    "en-CA",
+                    "en-GB",
+                    "en-MY",
+                    "en-NZ",
+                    "en-SG",
+                    "en-US"
+                ],
+                "de":
+                [
+                    "de-AT",
+                    "de-CH",
+                    "de-DE"
+                ],
+                "es":
+                [
+                    "es-ES",
+                    "es-MX"
+                ],
+                "fr":
+                [
+                    "fr-CH",
+                    "fr-FR"
+                ],
+                "it":
+                [
+                    "it-IT"
+                ],
+                "jp":
+                [
+                    "ja-JP"
+                ],
+                "ko":
+                [
+                    "ko-KR"
+                ],
+                "pl":
+                [
+                    "pl-PL"
+                ],
+                "ru":
+                [
+                    "ru-RU"
+                ],
+                "zh":
+                [
+                    "zh-Hans",
+                    "zh-Hant"
+                ]
+            }
+        },
+        "media_languages":
+        {
+            "de": 985,
+            "en": 984,
+            "cz": 1671,
+            "zh-Hans": 989,
+            "zh-Hant": 993,
+            "ko": 992,
+            "da": 1673,
+            "nl": 995,
+            "sk": 1000,
+            "es": 994,
+            "fr": 982,
+            "jp": 991,
+            "id": 990,
+            "it": 983,
+            "no": 999,
+            "pl": 998,
+            "pt": 996,
+            "ru": 987,
+            "se": 1001
+        },
+        "legal_date_limits":
+        {
+            "current": 1,
+            "coming_up": 2,
+            "past": 3
+        },
+        "content_types":
+        [
+            "contact_options",
+            "dealer_store",
+            "event",
+            "gallery",
+            "landing_page",
+            "leica_story",
+            "news",
+            "press_release",
+            "product",
+            "product_subpage"
+        ],
+        "moderation_states":
+        {
+            "draft": "default-draft",
+            "unpublished": "default-unpublished",
+            "confidential": "default-confidential",
+            "ready-for-review": "default-ready_for_review",
+            "published": "default-published"
+        },
+        "media_types":
+        [
+            "document",
+            "embedded_video",
+            "flexible_image",
+            "image",
+            "pim_document",
+            "pim_image",
+            "pim_proof_of_performance",
+            "press_image",
+            "private_document",
+            "private_image"
+        ]
+    },
+    "login":
+    {
+        "username":
+        {
+            "method": "By.ID",
+            "value": "edit-name",
+            "interaction": "send_keys"
+        },
+        "password":
+        {
+            "method": "By.ID",
+            "value": "edit-pass",
+            "interaction": "send_keys"
+        },
+        "submit":
+        {
+            "method": "By.ID",
+            "value": "edit-submit",
+            "interaction": "click"
+        }
+    },
+    "dashboards":
+    {
+        "content_dashboard":
+        {
+            "uri": "/admin/content",
+            "pagination":
+            {
+                "type": "url-parameter",
+                "name": "page",
+                "parametrize_first_page": false,
+                "last_page":
+                {
+                    "method": "By.CLASS_NAME",
+                    "value": "pager__item--last",
+                    "find_elements":
+                    {
+                        "method": "By.TAG_NAME",
+                        "value": "a"
+                    }
+                }
+            },
+            "row_count":
+            {
+                "method": "By.TAG_NAME",
+                "value": "tbody",
+                "find_elements":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "tr"
+                }
+            },
+            "row_ids":
+            {
+                "method": "By.TAG_NAME",
+                "value": "td",
+                "index": -1,
+                "find_elements":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "li",
+                    "index": 0,
+                    "find_elements":
+                    {
+                        "method": "By.TAG_NAME",
+                        "value": "a"
+                    }
+                }
+            },
+            "filter_type": "url-parameters",
+            "filters":
+            {
+                "language":
+                {
+                    "name": "langcode",
+                    "type": "language",
+                    "show_unselected": true,
+                    "default": "All"
+                },
+                "title":
+                {
+                    "name": "title",
+                    "type": "string",
+                    "show_unselected": true,
+                    "default": "All"
+                },
+                "content_type":
+                {
+                    "name": "type",
+                    "type": "content_type",
+                    "show_unselected": true,
+                    "default": "All"
+                },
+                "publication_state":
+                {
+                    "name": "status",
+                    "type": "num_bool",
+                    "show_unselected": true,
+                    "default": "All"
+                },
+                "moderation_state":
+                {
+                    "name": "moderation_state",
+                    "type": "moderation_state",
+                    "show_unselected": true,
+                    "default": "All"
+                }
+            }
+        },
+        "product_dashboard":
+        {
+            "uri": "/admin/product-dashboard",
+            "pagination":
+            {
+                "type": "url-postfix",
+                "parametrize_first_page": false,
+                "last_page":
+                {
+                    "method": "By.CLASS_NAME",
+                    "value": "container-inline",
+                    "find_elements":
+                    {
+                        "method": "By.TAG_NAME",
+                        "value": "a",
+                        "index": -1
+                    }
+                }
+            },
+            "row_count":
+            {
+                "method": "By.ID",
+                "value": "edit-dashboard",
+                "find_elements":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "tbody",
+                    "find_elements":
+                    {
+                        "method": "By.TAG_NAME",
+                        "value": "tr"
+                    }
+                }
+            },
+            "row_ids":
+            {
+                "method": "By.TAG_NAME",
+                "value": "td",
+                "index": -1,
+                "find_elements":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "li",
+                    "index": 0,
+                    "find_elements":
+                    {
+                        "method": "By.TAG_NAME",
+                        "value": "a"
+                    }
+                }
+            },
+            "filter_type": "url-parameters",
+            "filters":
+            {
+                "language":
+                {
+                    "name": "language",
+                    "type": "language",
+                    "show_unselected": false
+                },
+                "PIM_active_status":
+                {
+                    "name": "pim_is_active",
+                    "type": "num_bool",
+                    "show_unselected": false
+                },
+                "PIM_historical_status":
+                {
+                    "name": "is_historical",
+                    "type": "num_bool",
+                    "show_unselected": false
+                },
+                "product_name":
+                {
+                    "name": "title",
+                    "type": "string",
+                    "show_unselected": false
+                },
+                "publication_status":
+                {
+                    "name": "is_active",
+                    "type": "num_bool",
+                    "show_unselected": false
+                },
+                "sku":
+                {
+                    "name": "material_number",
+                    "type": "string",
+                    "show_unselected": false
+                }
+            }
+        },
+        "media_dashboard":
+        {
+            "uri": "/admin/content/media",
+            "pagination":
+            {
+                "type": "url-parameter",
+                "name": "page",
+                "parametrize_first_page": false,
+                "last_page":
+                {
+                    "method": "By.CLASS_NAME",
+                    "value": "pager__item--last",
+                    "find_elements":
+                    {
+                        "method": "By.TAG_NAME",
+                        "value": "a"
+                    }
+                }
+            },
+            "row_count":
+            {
+                "method": "By.TAG_NAME",
+                "value": "tbody",
+                "find_elements":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "tr"
+                }
+            },
+            "row_ids":
+            {
+                "method": "By.TAG_NAME",
+                "value": "td",
+                "index": -1,
+                "find_elements":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "li",
+                    "index": 0,
+                    "find_elements":
+                    {
+                        "method": "By.TAG_NAME",
+                        "value": "a"
+                    }
+                }
+            },
+            "filter_type": "url-parameters",
+            "filters":
+            {
+                "language":
+                {
+                    "name": "langcode",
+                    "type": "language",
+                    "show_unselected": true,
+                    "default": "All"
+                },
+                "legal_date_limit":
+                {
+                    "name": "field_legal_date_limit_value",
+                    "type": "legal_date_limit",
+                    "show_unselected": true,
+                    "default": "All"
+                },
+                "media_name":
+                {
+                    "name": "name",
+                    "type": "string",
+                    "show_unselected": true,
+                    "default": ""
+                },
+                "media_type":
+                {
+                    "name": "type",
+                    "type": "media_type",
+                    "show_unselected": true,
+                    "default": "All"
+                },
+                "media_document_category":
+                {
+                    "name": "field_media_document_category_target_id",
+                    "type": "string",
+                    "show_unselected": true,
+                    "default": ""
+                },
+                "media_document_topic":
+                {
+                    "name": "field_media_document_topic_target_id",
+                    "type": "string",
+                    "show_unselected": true,
+                    "default": ""
+                },
+                "media_document_language":
+                {
+                    "name": "field_media_document_language_target_id",
+                    "type": "media_language",
+                    "show_unselected": false,
+                    "default": ""
+                },
+                "publication_status":
+                {
+                    "name": "status",
+                    "type": "num_bool",
+                    "show_unselected": true,
+                    "default": "All"
+                },
+                "tag":
+                {
+                    "name": "field_tag_target_id",
+                    "type": "string",
+                    "show_unselected": true,
+                    "default": ""
+                }
+            }
+        }
+    },
+    "nodes":
+    {
+        "meta_data":
+        {
+            "dom_element": {
+                "method": "By.ID",
+                "value": "gin_sidebar"
+            }
+        }
+    }
+}
