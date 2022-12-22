@@ -142,7 +142,7 @@ class DrupalDashboard():
 
 
 	def _get_max_pages(self):
-		href = browser.get_value_of_attribute(key = self._dashboard_key + ".pagination.last_page", attr = "href")
+		href = browser.get_value_of_attribute(key = self._dashboard_key + ".pagination.last_page")
 		# if we don't find the configured element, we'll receive an empty string, which indicates, that we don't have a pagination at all. 
 		if(not href):
 			self._max_pages = 0
@@ -194,11 +194,11 @@ class DrupalDashboard():
 				if(not val in DC.get('server.content_types')):
 					log.fatal(f"[DrupalDashboard._get_parameter_for_filter()] Couldn't find content 	type '{val}' in drupal configuration. Valid content_types are '{DC.get('	server.content_types')}'")
 				value = val
-			elif(data_type == "moderation_state"):
-				if(val in DC.get('server.moderation_states').keys()):
-					value = DC.get('server.moderation_states.' + val)
+			elif(data_type == "moderation_status"):
+				if(val in DC.get('server.moderation_status').keys()):
+					value = DC.get('server.moderation_status.' + val)
 				else:
-					log.fatal(f"[DrupalDashboard._get_parameter_for_filter()] Couldn't find moderation 	state '{val}' in drupal configuration. Valid moderation states are {DC.get('server.moderation_states').keys()}")
+					log.fatal(f"[DrupalDashboard._get_parameter_for_filter()] Couldn't find moderation 	state '{val}' in drupal configuration. Valid moderation states are {DC.get('server.moderation_status').keys()}")
 			elif(data_type == "num_bool"):
 				# for some odd reason, someone decided to define "unpublished" as 2
 				if(type(val) == bool):

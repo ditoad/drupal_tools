@@ -97,7 +97,9 @@ class Browser():
 				log.error(f"[drupal_browser.get_value_of_attribute()] Element '{element.get_attribute('outerHTML')}' doesn't have a {attr} attribute.")
 		elem = self._find_element(element = element, key = key)
 		if(elem == None):
-			return
+			return None
+		if(not attr and 'attribute' in DC.get(key)):
+			attr = DC.get(key + '.attribute')
 		try:
 			return elem.get_attribute(attr)
 		except Exception as e:

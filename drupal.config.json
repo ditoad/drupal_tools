@@ -14,42 +14,48 @@
         "login_uri": "/user/login",
         "default_language": "en-int",
         "root_language": "en-int",
+        "node_edit_prefix": "/node/",
+        "node_edit_postfix": "/edit",
+        "node_translations_postfix": "/translations",
+        "media_edit_prefix": "/media/",
+        "media_edit_postfix": "/edit",
+        "media_translations_postfix": "/edit/translations",
         "languages":
-        [
-            "en-int",
-            "en",
-            "de",
-            "es",
-            "fr",
-            "it",
-            "ja",
-            "ko",
-            "pl",
-            "ru",
-            "zh",
-            "de-AT",
-            "de-CH",
-            "de-DE",
-            "en-AE",
-            "en-AU",
-            "en-CA",
-            "en-GB",
-            "en-MY",
-            "en-NZ",
-            "en-SG",
-            "en-US",
-            "es-ES",
-            "es-MX",
-            "fr-CH",
-            "fr-FR",
-            "it-IT",
-            "ja-JP",
-            "ko-KR",
-            "pl-PL",
-            "ru-RU",
-            "zh-Hans",
-            "zh-Hant"
-        ],
+        {
+            "de": "German",
+            "de-AT": "German - Austria",
+            "de-CH": "German - Switzerland",
+            "de-DE": "German - Germany",
+            "en": "English",
+            "en-AE": "English - United Arab Emirates",
+            "en-AU": "English - Australia",
+            "en-CA": "English - Canada",
+            "en-GB": "English - Great Britain",
+            "en-int": "English international",
+            "en-MY": "English - Malaysia",
+            "en-NZ": "English - New Zealand",
+            "en-SG": "English - Singapore",
+            "en-US": "English - USA",
+            "es": "Spanish",
+            "es-ES": "Spanish - Spain",
+            "es-MX": "Spanish - Mexico",
+            "fr": "French",
+            "fr-CH": "French - Switzerland",
+            "fr-FR": "French - France",
+            "it": "Italian",
+            "it-IT": "Italian - Italy",
+            "ja": "Japanese",
+            "ja-JP": "Japanese - Japan",
+            "ko": "Korean",
+            "ko-KR": "Korean - Korea",
+            "pl": "Polish",
+            "pl-PL": "Polish - Poland",
+            "ru": "Russian",
+            "ru-RU": "Russia - Russian",
+            "zh": "Chinese",
+            "zh-Hans": "Simplified Chinese - China",
+            "zh-Hant": "Traditional Chinese - China"
+        },
         "language_display_names":
         {
             "Chinese": "zh",
@@ -60,7 +66,7 @@
             "English - New Zealand": "en-NZ",
             "English - Singapore": "en-SG",
             "English - United Arab Emirates": "en-AE",
-            "English - USA  ": "en-US",
+            "English - USA": "en-US",
             "English international (Original language)": "en-int",
             "English international": "en-int",
             "English": "en",
@@ -186,13 +192,48 @@
             "product",
             "product_subpage"
         ],
-        "moderation_states":
+        "content_type_body_classes":
+        {
+            "page-node-type-contact-options": "contact_options",
+            "page-node-type-dealer-store": "dealer_store",
+            "page-node-type-event": "event",
+            "page-node-type-gallery": "gallery",
+            "page-node-type-landing-page": "landing_page",
+            "page-node-type-leica-story": "leica_story",
+            "page-node-type-news": "news",
+            "page-node-type-press-release": "press_release",
+            "page-node-type-product": "product",
+            "page-node-type-product-subpage": "product_subpage"
+        },
+        "content_type_display_names":
+        {
+            "Contact": "contact_options",
+            "Dealer/Store": "dealer_store",
+            "Event": "event",
+            "Gallery": "gallery",
+            "Landing page": "landing_page",
+            "Leica Story": "leica_story",
+            "News": "news",
+            "Press release": "press_release",
+            "Product": "product",
+            "Product subpage": "product_subpage"
+        },
+        "moderation_status":
         {
             "draft": "default-draft",
             "unpublished": "default-unpublished",
             "confidential": "default-confidential",
             "ready-for-review": "default-ready_for_review",
             "published": "default-published"
+        },
+        "moderation_status_display_names":
+        {
+            "Not translated": "not-translated",
+            "Draft": "draft",
+            "Unpublished": "unpublished",
+            "Confidential": "confidential",
+            "Ready for review": "ready-for-review",
+            "Published": "published"
         },
         "media_types":
         [
@@ -206,6 +247,39 @@
             "press_image",
             "private_document",
             "private_image"
+        ],
+        "paragraphs":
+        [
+            "Anchor link",
+            "Asymmetric Paragraph",
+            "Category teasers overview",
+            "Content Teasers",
+            "Content Teasers item",
+            "Filtered contacts",
+            "Find a Store/Dealer",
+            "From library",
+            "Hero content",
+            "Hero image",
+            "Hero image wrapper",
+            "Iframe",
+            "Lead generation banner",
+            "Media",
+            "Media Documents",
+            "Media text",
+            "Media text wrapper",
+            "Newsletter paragraph",
+            "Overview",
+            "PIM Media",
+            "Parallax Testimonial",
+            "Product rendered description field",
+            "Product rendered field",
+            "RSS feed",
+            "Scrolling section",
+            "Specification data",
+            "Specification data item",
+            "Testimonial",
+            "Text",
+            "Title and text"
         ]
     },
     "login":
@@ -243,6 +317,7 @@
                 {
                     "method": "By.CLASS_NAME",
                     "value": "pager__item--last",
+                    "attribute": "href",
                     "find_elements":
                     {
                         "method": "By.TAG_NAME",
@@ -308,10 +383,10 @@
                     "show_unselected": true,
                     "default": "All"
                 },
-                "moderation_state":
+                "moderation_status":
                 {
-                    "name": "moderation_state",
-                    "type": "moderation_state",
+                    "name": "moderation_status",
+                    "type": "moderation_status",
                     "show_unselected": true,
                     "default": "All"
                 }
@@ -328,6 +403,7 @@
                 {
                     "method": "By.CLASS_NAME",
                     "value": "container-inline",
+                    "attribute": "href",
                     "find_elements":
                     {
                         "method": "By.TAG_NAME",
@@ -421,6 +497,7 @@
                 {
                     "method": "By.CLASS_NAME",
                     "value": "pager__item--last",
+                    "attribute": "href",
                     "find_elements":
                     {
                         "method": "By.TAG_NAME",
@@ -526,11 +603,67 @@
     },
     "nodes":
     {
+        "translations":
+        {
+            "no_translation_status": "Not translated",
+            "rows":
+            {
+                "method": "By.TAG_NAME",
+                "value": "tbody",
+                "find_elements":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "tr"
+                }
+            },
+            "row_structure":
+            {
+                "language_display_name":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "td",
+                    "index": 0,
+                    "attribute": "innerHTML"
+                },
+                "language_display_name_strong":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "td",
+                    "index": 0,
+                    "attribute": "innerHTML",
+                    "find_elements":
+                    {
+                        "method": "By.TAG_NAME",
+                        "value": "strong"
+                    }
+                },
+                "title":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "td",
+                    "index": 1,
+                    "attribute": "innerHTML",
+                    "find_elements":
+                    {
+                        "method": "By.TAG_NAME",
+                        "value": "a"
+                    }
+                },
+                "translation_status":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "td",
+                    "index": 2,
+                    "attribute": "innerHTML"
+                }
+            }
+        },
         "meta_data":
         {
-            "dom_element": {
+            "last_saved":
+            {
                 "method": "By.ID",
-                "value": "gin_sidebar"
+                "value": "edit-meta-changed"
             }
         }
     }
