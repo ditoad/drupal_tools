@@ -104,7 +104,6 @@ class DrupalNode():
 
 
 
-
 class ContentNode(DrupalNode):
 	"This class implements content node overarching attributes, that are not covered in the super class"
 	def __init__(self, row_element = None, nodeID: str = None):

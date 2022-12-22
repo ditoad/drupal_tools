@@ -102,5 +102,5 @@ class Logger():
 			self._logger.addHandler( self._console_handler )
 
 
-log = Logger(name = 'DrupalLogger', logfile = "logs/test.log")
+log = Logger(name = 'DrupalLogger', logfile = "logs/drupal.log")
 log.set_debug()
