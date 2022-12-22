@@ -1,8 +1,12 @@
+from datetime import datetime
 from drupal_logger import log
 from drupal_browser import browser
 from drupal_configuration import *
 from drupal_connection import DConn
 import re
+import pprint
+
+
 
 class DrupalNode():
 	"This is a super class that provides mutual attributes across normal nodes and media nodes. Content type specific attributes have to be implemented in inheriting classes."
@@ -11,14 +15,13 @@ class DrupalNode():
 		self._nodeID: str = nodeID
 		self.isMedia: bool = isMedia
 		self.meta: dict = {
+			"node_type": "",
+			"title": "",
+			"language": "",
 			"last_saved": "",
 			"author": "",
-			"publication_status": "",
 			"moderation_status": "",
 			"description": "",
-			"robots": [],
-			"referer_policy": "",
-			"sitemaps": {},
 			# translations are done
 			"translations": {
 				"status": {},
@@ -32,10 +35,45 @@ class DrupalNode():
 		else:
 			self._read_media_meta_data()
 
+		pprint.pprint(self.meta)
+
 
 	def _read_node_meta_data(self):
 		"reads the node url in edit mode and extracts all meta data from the side bar"
+		matches = None
 		DConn.load_node_edit_url(nodeID = self._nodeID)
+		# getting the sidebar with meta data
+		sidebar = browser.get_element(key = 'nodes.meta_data.existence', strict = True)
+		if(not sidebar):
+			log.fatal(f"[DrupalNode._read_node_meta_data()] The node with ID {self._nodeID} doesn't have a meta data side bar.")
+		self.meta['node_type'] = browser.get_value_of_attribute(key = 'server.content_type_body_class_attribute')
+		matches = re.search(DC.get('server.content_type_body_classes_regexp'), self.meta['node_type'])
+		if(matches):
+			self.meta['node_type'] = matches.group(1)
+		else:
+			log.fatal(f"[DrupalNode._read_node_meta_data()] Couldn't identify node type in body class '{self.meta['node_type']}'")
+		self.meta['title'] = browser.get_value_of_attribute(key = 'nodes.title')
+		self.meta['language'] = DC.get('server.default_language')
+		self.meta['last_saved'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.last_saved')
+		matches = re.search(DC.get('nodes.meta_data.last_saved.regexp'), self.meta['last_saved'])
+		if(matches):
+			self.meta['last_saved'] = matches.group(1)
+		else:
+			log.fatal(f"[DrupalNode._read_node_meta_data()] Couldn't find last saved in meta data of node {self._nodeID} in text '{self.meta['last_saved']}' with regular expresseion '{DC.get('nodes.meta_data.last_saved.regexp')}'")
+		self.meta['last_saved'] = datetime.strptime(self.meta['last_saved'], DC.get('server.timestamp_input_format')).strftime(DC.get('server.timestamp_output_format'))
+		self.meta['author'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.author')
+		matches = re.search(DC.get('nodes.meta_data.author.regexp'), self.meta['author'])
+		if(matches):
+			self.meta['author'] = matches.group(1)
+		else:
+			log.fatal(f"[DrupalNode._read_node_meta_data()] Couldn't find author in meta data of node {self._nodeID} in text '{self.meta['author']}' with regular expresseion '{DC.get('nodes.meta_data.author.regexp')}'")
+		self.meta['moderation_status'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.moderation_status')
+		matches = re.search(DC.get('nodes.meta_data.moderation_status.regexp'), self.meta['moderation_status'])
+		if(matches):
+			self.meta['moderation_status'] = DC.get('server.moderation_status_display_names.' + matches.group(1))
+		else:
+			log.fatal(f"[DrupalNode._read_node_meta_data()] Couldn't find moderation status in meta data of node {self._nodeID} in text '{self.meta['moderation_status']}' with regular expresseion '{DC.get('nodes.meta_data.moderation_status.regexp')}'")
+		self.meta['description'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.description')
 
 
 	def _read_node_translations(self):
@@ -58,14 +96,11 @@ class DrupalNode():
 			else:
 				self.meta['translation_status'][translation_status].append(language)
 			self.meta['translations']['title'][language] = title
-		print(self.meta)
+
 
 	def _read_media_meta_data(self):
-		"reads the media url in edit mode and extracts all meta data from the side bar"
+		"TBI: reads the media url in edit mode and extracts all meta data from the side bar"
 		print(f"Reading media node {self._nodeID} meta data")
-
-
-
 
 
 

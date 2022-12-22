@@ -77,8 +77,10 @@ class Browser():
 
 	def get_element(self, element = None, key: str = '', strict: bool = False):
 		elements = self.get_elements(element = element, key = key)
+		if(not elements):
+			return None
 		if(strict and len(elements) > 1):
-			log.error(f"[drupal_browser.get_element()] Found {len(elements)} elements for key '{key}' and element {element}")
+			log.error(f"[drupal_browser.get_element()] Strictly one element is enforced. But found {len(elements)} elements for key '{key}' in element. Returning first element for the method='{DC.get(key + '.method')}' and value='{DC.get(key + '.value')}' from with in the element: \n---\n{element}\n---")
 		return elements[0]
 
 
@@ -101,6 +103,8 @@ class Browser():
 		if(not attr and 'attribute' in DC.get(key)):
 			attr = DC.get(key + '.attribute')
 		try:
+			if(attr == "text"):
+				return elem.text
 			return elem.get_attribute(attr)
 		except Exception as e:
 			log.error(f"[drupal_browser.get_value_of_attribute()] Element {element.get_attribute('outerHTML')} for key '{key}' doesn't have a {attr} attribute.")
@@ -135,7 +139,7 @@ class Browser():
 	def _get_find_element_by_method(self, key: str = None):
 		"This attribute returns the "
 		if(not DC.get(key + '.method')):
-			log.error(f"[drupal_browser._get_find_element_by_method()] Couldn't find 'method' attribute in key '{key}'")
+			log.error(f"[drupal_browser._get_find_element_by_method()] Couldn't find 'method' attribute in key '{key}'. Available keys are {DC.get(key).keys()}")
 			return
 		if(DC.get(key + '.method') == "By.CLASS_NAME"):
 			method = By.CLASS_NAME
@@ -218,7 +222,7 @@ class Browser():
 			config.read(self._credentials_file)
 			log.info(f"[Browser._read_credentials_file()] Read credential file '{self._credentials_file}'")
 		except:
-			log.fatal(f"[Browser._read_credentials_file()] Failed to read credentials file '{self._credentials_file}' despite its existance.", 1)
+			log.fatal(f"[Browser._read_credentials_file()] Failed to read credentials file '{self._credentials_file}' despite its existence.", 1)
 		log.debug(f"[Browser._read_credentials_file()] Trying to read credential file section '{self._credentials_file}'")		
 		try:
 			self.ini_data['url'] = config.get(self._credentials_group, 'url')

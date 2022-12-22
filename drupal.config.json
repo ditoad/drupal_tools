@@ -20,6 +20,8 @@
         "media_edit_prefix": "/media/",
         "media_edit_postfix": "/edit",
         "media_translations_postfix": "/edit/translations",
+        "timestamp_input_format": "%m/%d/%Y - %H:%M",
+        "timestamp_output_format": "%Y-%m-%d_%H:%M:%S",
         "languages":
         {
             "de": "German",
@@ -192,6 +194,12 @@
             "product",
             "product_subpage"
         ],
+        "content_type_body_classes_regexp": "^.*\\spage-node-type-([a-zA-Z0-9-]+)",
+        "content_type_body_class_attribute":{
+            "method": "By.TAG_NAME",
+            "value": "body",
+            "attribute": "class"
+        },
         "content_type_body_classes":
         {
             "page-node-type-contact-options": "contact_options",
@@ -658,12 +666,44 @@
                 }
             }
         },
+        "title": {
+                "method": "By.ID",
+                "value": "edit-title-0-value",
+                "attribute": "value"
+        },
         "meta_data":
         {
+            "existence":{
+                "method": "By.ID",
+                "value": "gin_sidebar"
+            },
             "last_saved":
             {
                 "method": "By.ID",
-                "value": "edit-meta-changed"
+                "value": "edit-meta-changed",
+                "attribute": "text",
+                "regexp": "^\\D+(.*)"
+            },
+            "author":
+            {
+                "method": "By.ID",
+                "value": "edit-meta-author",
+                "attribute": "text",
+                "regexp": "^Author\\s+(.*)\\s*"
+            },
+            "moderation_status":
+            {
+                "method": "By.ID",
+                "value": "edit-moderation-state-0-current",
+                "attribute": "text",
+                "regexp": "^Current state\\s+(.*)\\s*"
+            },
+            "description":
+            {
+                "method": "By.ID",
+                "value": "edit-field-meta-0-basic-description",
+                "attribute": "innerHTML",
+                "regexp": "^Current state\\s+(.*)\\s*"
             }
         }
     }
