@@ -27,6 +27,9 @@ class DrupalConnection():
 		self._login()
 		self._base_url: str = DC.get('server.proto') + self._url + DC.get('server.default_language_uri_prefix')
 
+	def get_server_base_url(self):
+		return self._base_url
+
 
 	def load_node_edit_url(self, nodeID: str = None) -> bool:
 		if(not nodeID):

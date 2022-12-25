@@ -398,11 +398,13 @@
                     "value": "tr"
                 }
             },
-            "row_ids":
+            "row_edit_links":
             {
                 "method": "By.TAG_NAME",
                 "value": "td",
                 "index": -1,
+                "attribute": "href",
+                "regexp": "/node/(\\d+)",
                 "find_elements":
                 {
                     "method": "By.TAG_NAME",
@@ -490,11 +492,13 @@
                     }
                 }
             },
-            "row_ids":
+            "row_edit_links":
             {
                 "method": "By.TAG_NAME",
                 "value": "td",
                 "index": -1,
+                "attribute": "href",
+                "regexp": "/node/(\\d+)",
                 "find_elements":
                 {
                     "method": "By.TAG_NAME",
@@ -578,11 +582,13 @@
                     "value": "tr"
                 }
             },
-            "row_ids":
+            "row_edit_links":
             {
                 "method": "By.TAG_NAME",
                 "value": "td",
                 "index": -1,
+                "attribute": "href",
+                "regexp": "/media/(\\d+)",
                 "find_elements":
                 {
                     "method": "By.TAG_NAME",

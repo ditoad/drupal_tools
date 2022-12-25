@@ -1,6 +1,7 @@
 from drupal_logger import log
 from drupal_browser import browser
 from drupal_configuration import *
+from drupal_connection import DConn
 import re
 
 TRUE_STRINGS = ["1", "t", "y", "true", "True", "TRUE", "yes", "Yes", "YES", "on", "On", "ON", "active", "Active", "ACTIVE", "published", "Published", "PUBLISHED"]
@@ -14,7 +15,8 @@ class DrupalDashboard():
 		"The init method can't be called with pagination page, since we don't even know yet if there are any pages."
 		self._dashboard_key: str = dashboard_key
 		self._filters: dict = filters
-		self._baseurl: str = DC.get('server.proto') + DC.get('server.url') + DC.get('server.default_language_uri_prefix') + DC.get(self._dashboard_key + '.uri')
+		self._baseurl = DConn.get_server_base_url()
+		self._baseurl = self._baseurl + DC.get(self._dashboard_key + '.uri')
 		self._reset()
 		if(self._filters):
 			self.set_filters()
@@ -37,16 +39,27 @@ class DrupalDashboard():
 		self._row_count_on_current_page: int = 0
 		self._row_count_total: int = -1
 		self._row_elements_on_page = []
-		self._row_ids_on_page = []
+		self._node_ids_on_page = []
 		self._row_edit_links_on_page = []
 		self._rows_per_page = 0
 		self._url: str = ''
 
 
+	def get_first_node_id_on_page(self):
+		if(len(self._node_ids_on_page) > 0):
+			return self._node_ids_on_page[0]
+		else:
+			return
+		
+
 	def get_max_pages(self):
 		if(self._max_pages >= 0):
 			return self._max_pages
 		log.fatal(f"[DrupalDashboard.get_max_pages()] Pagination hasn't been analyzed yet. Can't return a valid value for `self._max_pages`.")
+
+
+	def get_node_ids_on_page(self):
+		return self._node_ids_on_page
 
 
 	def get_page(self):
@@ -98,6 +111,27 @@ class DrupalDashboard():
 			log.fatal(f"[DrupalDashboard.load_page()] Attempted to load a page out of bounds. Attempted page was {page} and there are only {self._max_pages} pages available")
 		else:
 			log.fatal(f"[DrupalDashboard.load_page()] Attempted to load the dashboard on page {page} without previously loading the dashboard with the current filter set.")
+
+
+	def read_row_edit_links(self):
+		"This attribute iterates over each row element on the page, tries to find the edit link of the row, stores it and then extracts the node IDs and appends them to the node id array self._node_ids_on_page"
+		self._row_edit_links_on_page = []
+		self._node_ids_on_page = []
+		for row in self._row_elements_on_page:
+			node_id = ''
+			href = ''
+			try:
+				href = browser.get_value_of_attribute(element = row, key = self._dashboard_key + '.row_edit_links')
+			except Exception as e:
+				log.fatal(f"[DrupalDashboard.read_row_edit_links()] Couldn't find edit link in row {row.get_attribute('outerHTML')}")
+			self._row_edit_links_on_page.append(href)
+			matches = re.search(DC.get(self._dashboard_key + '.row_edit_links.regexp'), href)
+			if(matches):
+				node_id = int(matches.group(1))
+				self._node_ids_on_page.append(node_id)
+				log.debug(f"-> Found Edit link: '{href}' with ID {node_id}")
+			else:
+				log.fatal(f"[DrupalDashboard.read_row_edit_links()] Couldn't find a node ID in edit link '{href}' with regexp '{DC.get(self._dashboard_key + '.row_edit_links.regexp')}'")
 
 
 	def set_filters(self, filters: dict = None):
@@ -243,27 +277,6 @@ class DrupalDashboard():
 		return param
 
 
-	def _read_row_ids(self, regexp: str):
-		"This attribute iterates over each row element on the page, tries to find the node IDs and appends them to the node id array self._row_ids_on_page"
-		self._row_edit_links_on_page = []
-		self._row_ids_on_page = []
-		for row in self._row_elements_on_page:
-			row_id = ''
-			href = ''
-			try:
-				element = browser._find_element(element = row, key = self._dashboard_key + '.row_ids')
-				href = element.get_attribute('href')
-			except Exception as e:
-				log.fatal(f"[DrupalDashboard._read_row_ids()] Couldn't find edit link in row {row.get_attribute('outerHTML')}")
-
-			self._row_edit_links_on_page.append(href)
-			matches = re.search(regexp, href)
-			if(matches):
-				row_id = int(matches.group(1))
-			self._row_ids_on_page.append(row_id)
-			print(f"Found Edit link: {href}\nID {row_id}")
-
-
 	def _set_pagination(self):
 		"This method sets the pagination as url-extension or url-parameter depending on the dashboard's configuration"
 		self._pagination_url_postfix = ''
@@ -289,9 +302,9 @@ class ContentDashboard(DrupalDashboard):
 		super().__init__('dashboards.content_dashboard', filters = filters)
 
 
-	def load(self):
-		super().load()
-		# super()._read_row_ids("/node/(\d+)")
+	# def load(self):
+	# 	super().load()
+		# super()._read_row_node_ids()
 
 
 
@@ -308,9 +321,9 @@ class MediaDashboard(DrupalDashboard):
 		super().__init__('dashboards.media_dashboard', filters = filters)
 
 
-	def load(self):
-		super().load()
-		# super()._read_row_ids("/media/(\d+)")
+	# def load(self):
+	# 	super().load()
+		# super().read_row_edit_links()
 
 
 
@@ -320,6 +333,6 @@ class ProductDashboard(DrupalDashboard):
 		super().__init__('dashboards.product_dashboard', filters = filters)
 
 
-	def load(self):
-		super().load()
-		# super()._read_row_ids("/node/(\d+)")
+	# def load(self):
+	# 	super().load()
+		# super().read_row_edit_links()
