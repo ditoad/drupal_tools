@@ -38,11 +38,14 @@ class Browser():
 
 	def load_url(self, url: str):
 		"Method that retrieves an URL in the browser"
-		try:
-			self._browser.get(url)
-		except Exception as e:
-			log.error(f"[drupal_browser.load_url()] Error while trying to load URL '{url}': {e}")
 		self._url = url
+		try:
+			log.debug(f"[Browser.load_url()] Trying to load url {self._url}.")
+			self._browser.get(self._url)
+		except Exception as e:
+			log.error(f"[drupal_browser.load_url()] Error while trying to load URL '{self._url}': {e}")
+			return False
+		return True
 
 
 	def get_url(self) -> str:
@@ -94,9 +97,10 @@ class Browser():
 	def get_value_of_attribute(self, element = None, key: str = '', attr: str = '') -> str:
 		if(element and key == ''):
 			try:
+				print(f"Here with {element}")
 				return element.get_attribute(attr)
 			except Exception as e:
-				log.error(f"[drupal_browser.get_value_of_attribute()] Element '{element.get_attribute('outerHTML')}' doesn't have a {attr} attribute.")
+				log.error(f"[drupal_browser.get_value_of_attribute()] Element '{element.get_attribute('outerHTML')}' doesn't have a {attr} attribute. Error: '{e}'")
 		elem = self._find_element(element = element, key = key)
 		if(elem == None):
 			return None
@@ -107,7 +111,7 @@ class Browser():
 				return elem.text
 			return elem.get_attribute(attr)
 		except Exception as e:
-			log.error(f"[drupal_browser.get_value_of_attribute()] Element {element.get_attribute('outerHTML')} for key '{key}' doesn't have a {attr} attribute.")
+			log.error(f"[drupal_browser.get_value_of_attribute()] Element {elem.get_attribute('outerHTML')} for key '{key}' doesn't have a {attr} attribute.")
 
 
 	def has_element(self, element = None, key: str = '') -> bool:

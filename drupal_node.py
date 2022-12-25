@@ -16,26 +16,47 @@ class DrupalNode():
 		self.isMedia: bool = isMedia
 		self.meta: dict = {
 			"node_type": "",
-			"title": "",
 			"language": "",
 			"last_saved": "",
 			"author": "",
 			"moderation_status": "",
-			"description": "",
-			# translations are done
-			"translations": {
+			"description": ""
+		}
+		self.content: dict = {}
+		self.translations: dict = {
+			"by_language": {
 				"status": {},
 				"title": {}
 			},
-			"translation_status": {}
+			"by_status":{}
 		}
 		if(not self.isMedia):
 			self._read_node_meta_data()
+			self._read_node_content()
 			self._read_node_translations()
 		else:
 			self._read_media_meta_data()
+			# self._read_media_content()
+			if(self.meta['node_type'] in [
+				'document', 
+				'embedded_video', 
+				'image', 
+				'pim_document', 
+				'pim_image', 
+				'pim_proof_of_performance', 
+				'press_image',
+				'private_document',
+				'private_image'
+				]
+				):
+				self._read_node_translations()
+
 
 		pprint.pprint(self.meta)
+		print("----------------------------")
+		pprint.pprint(self.content)
+		print("----------------------------")
+		pprint.pprint(self.translations)
 
 
 	def _read_node_meta_data(self):
@@ -52,7 +73,6 @@ class DrupalNode():
 			self.meta['node_type'] = matches.group(1)
 		else:
 			log.fatal(f"[DrupalNode._read_node_meta_data()] Couldn't identify node type in body class '{self.meta['node_type']}'")
-		self.meta['title'] = browser.get_value_of_attribute(key = 'nodes.title')
 		self.meta['language'] = DC.get('server.default_language')
 		self.meta['last_saved'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.last_saved')
 		matches = re.search(DC.get('nodes.meta_data.last_saved.regexp'), self.meta['last_saved'])
@@ -76,9 +96,19 @@ class DrupalNode():
 		self.meta['description'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.description')
 
 
+	def _read_node_content(self):
+		"This attribute reads the mode type specific content fields"
+		title = browser.get_value_of_attribute(key = 'nodes.content.title')
+		self.content.update({'title': title})
+
+
 	def _read_node_translations(self):
-		DConn.load_node_translation_url(nodeID = self._nodeID)
-		rows = browser.get_elements(key = 'nodes.translations.rows')
+		if(self.isMedia):
+			DConn.load_media_translation_url(nodeID = self._nodeID)
+			rows = browser.get_elements(key = 'nodes.translations.rows')
+		else:
+			DConn.load_node_translation_url(nodeID = self._nodeID)
+			rows = browser.get_elements(key = 'nodes.translations.rows')
 		for element in rows:
 			language_display_name = browser.get_value_of_attribute(element = element, key = 'nodes.translations.row_structure.language_display_name')
 			if(not language_display_name in DC.get('server.language_display_names')):
@@ -90,17 +120,36 @@ class DrupalNode():
 			if(not title):
 				title = ''
 			translation_status = browser.get_value_of_attribute(element = element, key = 'nodes.translations.row_structure.translation_status')
-			self.meta['translations']['status'][language] = translation_status
-			if(not translation_status in self.meta['translation_status']):
-				self.meta['translation_status'][translation_status] = [language]
+			self.translations['by_language']['status'][language] = translation_status
+			self.translations['by_language']['title'][language] = title
+			if(not translation_status in self.translations['by_status']):
+				self.translations['by_status'].update({translation_status: [language]})
 			else:
-				self.meta['translation_status'][translation_status].append(language)
-			self.meta['translations']['title'][language] = title
+				self.translations['by_status'][translation_status].append(language)
 
 
 	def _read_media_meta_data(self):
-		"TBI: reads the media url in edit mode and extracts all meta data from the side bar"
-		print(f"Reading media node {self._nodeID} meta data")
+		"Reads the media url in edit mode and extracts all meta data from the side bar. Unfortunately we have to jump through hoops to find out the exact media type first"
+		matches = None
+		DConn.load_media_edit_url(nodeID = self._nodeID)
+
+		media_type = browser.get_value_of_attribute(key = 'server.media_type_identifier')
+		if(media_type and media_type in DC.get('server.media_type_display_name')):
+			media_type = DC.get('server.media_type_display_name.' + media_type)
+		if(not media_type):
+			for pim_type in DC.get('server.media_type_pim_identifiers').keys():
+				is_pim_type = True
+				for element in DC.get('server.media_type_pim_identifiers.' + pim_type):
+					if(not browser.has_element(key = 'server.media_type_pim_identifiers.' + pim_type + '.' + element)):
+						is_pim_type = False
+				if(is_pim_type):
+					media_type = pim_type
+					break
+		if(not media_type):
+			log.fatal(f"[DrupalNode._read_media_meta_data()] Couldn't find ")
+		self.meta['node_type'] = media_type
+
+		print(f"Found node {self._nodeID} is of media type '{media_type}'")
 
 
 

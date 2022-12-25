@@ -195,7 +195,8 @@
             "product_subpage"
         ],
         "content_type_body_classes_regexp": "^.*\\spage-node-type-([a-zA-Z0-9-]+)",
-        "content_type_body_class_attribute":{
+        "content_type_body_class_attribute":
+        {
             "method": "By.TAG_NAME",
             "value": "body",
             "attribute": "class"
@@ -211,7 +212,8 @@
             "page-node-type-news": "news",
             "page-node-type-press-release": "press_release",
             "page-node-type-product": "product",
-            "page-node-type-product-subpage": "product_subpage"
+            "page-node-type-product-subpage": "product_subpage",
+            "path-media": "media"
         },
         "content_type_display_names":
         {
@@ -225,6 +227,72 @@
             "Press release": "press_release",
             "Product": "product",
             "Product subpage": "product_subpage"
+        },
+        "media_type_identifier":
+        {
+            "method": "By.CLASS_NAME",
+            "value": "page-title",
+            "attribute": "text",
+            "find_elements":
+            {
+                "method": "By.TAG_NAME",
+                "value": "em"
+            }
+        },
+        "media_type_pim_identifiers":
+        {
+            "pim_document":
+            {
+                "pim_id":
+                {
+                    "method": "By.ID",
+                    "value": "edit-field-media-pim-id-wrapper"
+                },
+                "file_hash":
+                {
+                    "method": "By.ID",
+                    "value": "edit-field-media-file-hash-wrapper"
+                }
+            },
+            "pim_image":
+            {
+                "pim_id":
+                {
+                    "method": "By.ID",
+                    "value": "edit-field-media-pim-id-wrapper"
+                },
+                "image_hash":
+                {
+                    "method": "By.ID",
+                    "value": "edit-field-media-image-hash-wrapper"
+                }
+            }
+        },
+        "media_types":
+        [
+            "document",
+            "embedded_video",
+            "flexible_image",
+            "image",
+            "pim_document",
+            "pim_image",
+            "pim_proof_of_performance",
+            "press_image",
+            "private_document",
+            "private_image"
+        ],
+        "media_type_display_name":
+        {
+            "Document": "document",
+            "Embedded Video": "embedded_video",
+            "Flexible image": "flexible_image",
+            "Image": "image",
+            "PIM Document": "pim_document",
+            "PIM Image": "pim_image",
+            "PIM Proof Of Performance": "pim_proof_of_performance",
+            "Press image": "press_image",
+            "Private document": "private_document",
+            "Private image": "private_image"
         },
         "moderation_status":
         {
@@ -243,19 +311,6 @@
             "Ready for review": "ready-for-review",
             "Published": "published"
         },
-        "media_types":
-        [
-            "document",
-            "embedded_video",
-            "flexible_image",
-            "image",
-            "pim_document",
-            "pim_image",
-            "pim_proof_of_performance",
-            "press_image",
-            "private_document",
-            "private_image"
-        ],
         "paragraphs":
         [
             "Anchor link",
@@ -662,18 +717,27 @@
                     "method": "By.TAG_NAME",
                     "value": "td",
                     "index": 2,
-                    "attribute": "innerHTML"
+                    "attribute": "text"
                 }
             }
         },
-        "title": {
+        "content":
+        {
+            "title":
+            {
                 "method": "By.ID",
                 "value": "edit-title-0-value",
                 "attribute": "value"
+            }
+        },
+        "media":
+        {
+
         },
         "meta_data":
         {
-            "existence":{
+            "existence":
+            {
                 "method": "By.ID",
                 "value": "gin_sidebar"
             },

@@ -28,36 +28,36 @@ class DrupalConnection():
 		self._base_url: str = DC.get('server.proto') + self._url + DC.get('server.default_language_uri_prefix')
 
 
-	def load_node_edit_url(self, nodeID: str = None):
+	def load_node_edit_url(self, nodeID: str = None) -> bool:
 		if(not nodeID):
 			log.fatal(f"[DrupalConnection.load_node_edit_url()] Callimg attribute withoug nodeID not possible")
 		if(type(nodeID) != str):
 			nodeID = str(nodeID)
-		browser.load_url(self._base_url + DC.get('server.node_edit_prefix') + nodeID + DC.get('server.node_edit_postfix'))
+		return browser.load_url(self._base_url + DC.get('server.node_edit_prefix') + nodeID + DC.get('server.node_edit_postfix'))
 
 
-	def load_node_translation_url(self, nodeID: str = None):
+	def load_node_translation_url(self, nodeID: str = None) -> bool:
 		if(not nodeID):
-			log.fatal(f"[DrupalConnection.load_node_translation_url()] Callimg attribute withoug nodeID not possible")
+			log.fatal(f"[DrupalConnection.load_node_translation_url()] Calling attribute withoug nodeID not possible")
 		if(type(nodeID) != str):
 			nodeID = str(nodeID)
-		browser.load_url(self._base_url + DC.get('server.node_edit_prefix') + nodeID + DC.get('server.node_translations_postfix'))
+		return browser.load_url(self._base_url + DC.get('server.node_edit_prefix') + nodeID + DC.get('server.node_translations_postfix'))
 
 
-	def load_media_edit_url(self, nodeID: str = None):
+	def load_media_edit_url(self, nodeID: str = None) -> bool:
 		if(not nodeID):
-			log.fatal(f"[DrupalConnection.load_media_edit_url()] Callimg attribute withoug nodeID not possible")
+			log.fatal(f"[DrupalConnection.load_media_edit_url()] Calling attribute withoug nodeID not possible")
 		if(type(nodeID) != str):
 			nodeID = str(nodeID)
-		browser.load_url(self._base_url + DC.get('server.media_edit_prefix') + nodeID + DC.get('server.media_edit_postfix'))
+		return browser.load_url(self._base_url + DC.get('server.media_edit_prefix') + nodeID + DC.get('server.media_edit_postfix'))
 
 
 	def load_media_translation_url(self, nodeID: str = None):
 		if(not nodeID):
-			log.fatal(f"[DrupalConnection.load_media_translation_url()] Callimg attribute withoug nodeID not possible")
+			log.fatal(f"[DrupalConnection.load_media_translation_url()] Calling attribute withoug nodeID not possible")
 		if(type(nodeID) != str):
 			nodeID = str(nodeID)
-		browser.load_url(self._base_url + DC.get('server.media_edit_prefix') + nodeID + DC.get('server.media_translations_postfix'))
+		return browser.load_url(self._base_url + DC.get('server.media_edit_prefix') + nodeID + DC.get('server.media_translations_postfix'))
 
 
 	def _login(self):
