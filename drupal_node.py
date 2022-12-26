@@ -3,6 +3,7 @@ from drupal_logger import log
 from drupal_browser import browser
 from drupal_configuration import *
 from drupal_connection import DConn
+from selenium.webdriver.support.select import Select
 import re
 import pprint
 
@@ -34,6 +35,7 @@ class DrupalNode():
 			self._read_node_meta_data()
 			self._read_node_content()
 			self._read_node_translations()
+			DConn.load_node_edit_url(nodeID = self._nodeID)
 		else:
 			self._read_media_meta_data()
 			# self._read_media_content()
@@ -52,11 +54,11 @@ class DrupalNode():
 				self._read_node_translations()
 
 
-		pprint.pprint(self.meta)
-		print("----------------------------")
-		pprint.pprint(self.content)
-		print("----------------------------")
-		pprint.pprint(self.translations)
+		# pprint.pprint(self.meta)
+		# print("----------------------------")
+		# pprint.pprint(self.content)
+		# print("----------------------------")
+		# pprint.pprint(self.translations)
 
 
 	def _read_node_meta_data(self):
@@ -86,7 +88,8 @@ class DrupalNode():
 		if(matches):
 			self.meta['author'] = matches.group(1)
 		else:
-			log.fatal(f"[DrupalNode._read_node_meta_data()] Couldn't find author in meta data of node {self._nodeID} in text '{self.meta['author']}' with regular expresseion '{DC.get('nodes.meta_data.author.regexp')}'")
+			log.info(f"[DrupalNode._read_node_meta_data()] Couldn't find author in meta data of node {self._nodeID} in text '{self.meta['author']}' with regular expresseion '{DC.get('nodes.meta_data.author.regexp')}'. Assuming empty author.")
+			self.meta['author'] = ''
 		self.meta['moderation_status'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.moderation_status')
 		matches = re.search(DC.get('nodes.meta_data.moderation_status.regexp'), self.meta['moderation_status'])
 		if(matches):
@@ -152,7 +155,6 @@ class DrupalNode():
 		print(f"Found node {self._nodeID} is of media type '{media_type}'")
 
 
-
 class ContentNode(DrupalNode):
 	"This class implements content node overarching attributes, that are not covered in the super class"
 	def __init__(self, row_element = None, nodeID: str = None):
@@ -165,6 +167,42 @@ class ContentNode(DrupalNode):
 			super().__init__(nodeID = nodeID, isMedia = False)
 
 
+	def draft(self):
+		self.set_moderation_status("draft")
+
+
+	def unpublished(self):
+		self.set_moderation_status("unpublished")
+
+
+	def confidential(self):
+		self.set_moderation_status("confidential")
+
+
+	def confidential(self):
+		self.set_moderation_status("confidential")
+
+
+	def ready_for_review(self):
+		self.set_moderation_status("ready_for_review")
+
+
+	def published(self):
+		self.set_moderation_status("published")
+
+
+	def set_moderation_status(self, status: str = 'draft'):
+		if(not status in DC.get('server.moderation_status')):
+			log.fatal(f"[DrupalNode.set_moderation_status()] Passed moderation status '{status}' is not in the list of configured moderation status, which are: '{DC.get('server.moderation_status').keys()}'")
+		sel = Select(browser.get_element(key = 'nodes.interactions.change_status', strict = True))
+		sel.select_by_value(status)
+
+
+	def save(self):
+		browser.interact(key = 'nodes.interactions.save_node')
+		DConn.load_node_edit_url(nodeID = self._nodeID)
+
+		
 
 class MediaNode(DrupalNode):
 	"This class implements media nodes"

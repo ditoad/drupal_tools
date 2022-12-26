@@ -294,12 +294,13 @@
             "Private document": "private_document",
             "Private image": "private_image"
         },
+
         "moderation_status":
         {
             "draft": "default-draft",
             "unpublished": "default-unpublished",
             "confidential": "default-confidential",
-            "ready-for-review": "default-ready_for_review",
+            "ready_for_review": "default-ready_for_review",
             "published": "default-published"
         },
         "moderation_status_display_names":
@@ -672,6 +673,20 @@
     },
     "nodes":
     {
+        "interactions":
+        {
+            "change_status":
+            {
+                "method": "By.ID",
+                "value": "edit-moderation-state-0-state"
+            },
+            "save_node":
+            {
+                "method": "By.ID",
+                "value": "edit-submit--2--gin-edit-form",
+                "interaction": "click"
+            }
+        },
         "translations":
         {
             "no_translation_status": "Not translated",
@@ -737,9 +752,7 @@
             }
         },
         "media":
-        {
-
-        },
+        {},
         "meta_data":
         {
             "existence":
