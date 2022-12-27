@@ -13,6 +13,7 @@ class DrupalNode():
 
 	def __init__(self, nodeID: str, isMedia: bool = False):
 		self._nodeID: str = nodeID
+		self._view: str = ''
 		self.isMedia: bool = isMedia
 		self.meta: dict = {
 			"node_type": "",
@@ -27,8 +28,11 @@ class DrupalNode():
 			"by_status":{}
 		}
 		if(not self.isMedia):
+			print(f"Reading meta data of content node {self._nodeID}")
 			self._read_node_meta_data()
+			self.pprint_meta()
 			self._read_node_content()
+
 			if(self.meta['node_type'] in DC.get('server.translatable_content_types')
 				):
 				self._read_node_translations()
@@ -132,6 +136,20 @@ class DrupalNode():
 		return True
 
 
+	def is_translated_and_published(self, lang: str) -> bool:
+		translation_status = self.get_translation_status(lang = lang)
+		if(not translation_status or translation_status != DC.get('server.moderation_status_display_names.Published')):
+			return False
+		return True
+
+
+	def get_moderation_status(self) -> str:
+		if(self.isMedia):
+			log.error(f"[DrupalNode.get_moderation_status()] is not applicable to media nodes. Node '{self._nodeID}' is a media node. Returning empty string.")
+			return ''
+		return self.meta['moderation_status']
+
+
 	def get_translation_status(self, lang: str) -> str:
 		"returns the translation status"
 		if(not lang in self.translations['by_language']['status']):
@@ -165,7 +183,7 @@ class DrupalNode():
 		self.meta.update({'last_modified': browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.last_modified')})
 		self.meta['last_modified'] = datetime.strptime(self.meta['last_modified'], DC.get('server.timestamp_input_format')).strftime(DC.get('server.timestamp_output_format'))
 		self.meta.update({'author': browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.author')})
-		self.meta,update({'moderation_status': browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.moderation_status')})
+		self.meta.update({'moderation_status': browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.moderation_status')})
 		self.meta.update({'description': browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.description')})
 
 

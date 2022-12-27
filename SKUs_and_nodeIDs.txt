@@ -1,0 +1,4 @@
+sku=10301 nodeID=2368
+sku=10302 nodeID=2363
+sku=10370 nodeID=2243
+sku=10371 nodeID=2241

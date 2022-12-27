@@ -211,7 +211,8 @@
         {
             "method": "By.TAG_NAME",
             "value": "body",
-            "attribute": "class"
+            "attribute": "class",
+            "regexp": "page-node-type-([a-zA-Z0-9_-]+)"
         },
         "content_type_body_classes":
         {
@@ -438,7 +439,7 @@
                 "value": "td",
                 "index": -1,
                 "attribute": "href",
-                "regexp": "/node/(\\d+)",
+                "manual_regexp": "/node/(\\d+)",
                 "find_elements":
                 {
                     "method": "By.TAG_NAME",
@@ -532,7 +533,7 @@
                 "value": "td",
                 "index": -1,
                 "attribute": "href",
-                "regexp": "/node/(\\d+)",
+                "manual_regexp": "/node/(\\d+)",
                 "find_elements":
                 {
                     "method": "By.TAG_NAME",
@@ -811,7 +812,7 @@
                 "method": "By.ID",
                 "value": "gin_sidebar"
             },
-            "last_saved":
+            "last_modified":
             {
                 "method": "By.ID",
                 "value": "edit-meta-changed",

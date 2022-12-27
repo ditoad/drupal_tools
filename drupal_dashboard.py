@@ -124,14 +124,16 @@ class DrupalDashboard():
 				href = browser.get_value_of_attribute(element = row, key = self._dashboard_key + '.row_edit_links')
 			except Exception as e:
 				log.fatal(f"[DrupalDashboard.read_row_edit_links()] Couldn't find edit link in row {row.get_attribute('outerHTML')}")
+			log.debug(f"Found row with href='{href}'")
 			self._row_edit_links_on_page.append(href)
-			matches = re.search(DC.get(self._dashboard_key + '.row_edit_links.regexp'), href)
+			log.debug(f"Trying the regexp '{self._dashboard_key + '.row_edit_links.manual_regexp'}'")
+			matches = re.search(DC.get(self._dashboard_key + '.row_edit_links.manual_regexp'), href)
 			if(matches):
 				node_id = int(matches.group(1))
 				self._node_ids_on_page.append(node_id)
 				log.debug(f"-> Found Edit link: '{href}' with ID {node_id}")
 			else:
-				log.fatal(f"[DrupalDashboard.read_row_edit_links()] Couldn't find a node ID in edit link '{href}' with regexp '{DC.get(self._dashboard_key + '.row_edit_links.regexp')}'")
+				log.fatal(f"[DrupalDashboard.read_row_edit_links()] Couldn't find a node ID in edit link '{href}' with regexp '{DC.get(self._dashboard_key + '.row_edit_links.manual_regexp')}'")
 
 
 	def set_filters(self, filters: dict = None):

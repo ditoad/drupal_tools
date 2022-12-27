@@ -48,14 +48,17 @@ for sku in SKUs:
 
 	CN = ContentNode(nodeID = nodeID)
 
-	if('es-MX' in CN.translations['by_status']['published']):
-		log.info(f"SKU {sku} with node ID {nodeID} is already published in es-MX. Continuing")
-		continue
+	en_int_moderation_status = CN.get_moderation_status()
+	es_translation_status = CN.get_translation_status(lang = 'es')
+	es_ES_translation_status = CN.get_translation_status(lang = 'es-ES')
+	es_MX_translation_status = CN.get_translation_status(lang = 'es-MX')
 
-	if('en-int' in CN.translations['by_status']['published']):
-		if(not 'es' in CN.translations['by_status']['published']):
-			if(not 'es-ES')
-
+	print(f"\nNode: {nodeID}")
+	print("--------------")
+	print(f"en-int: {en_int_moderation_status}")
+	print(f"es: {es_translation_status}")
+	print(f"es-ES: {es_ES_translation_status}")
+	print(f"es-MX: {es_MX_translation_status}")
 
 	try:
 		oFile.write(f"sku={sku} nodeID={nodeID}\n")
