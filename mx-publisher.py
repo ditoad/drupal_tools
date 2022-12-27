@@ -1,7 +1,8 @@
 #!/usr/local/bin/python3
-
 from drupal_logger import Logger
+from drupal_node import *
 from SKU2NodeID import SKU2NodeID
+
 
 SKU_file = "./mexico_sku_list.txt"
 output_file = "SKUs_and_nodeIDs.txt"
@@ -40,14 +41,25 @@ extractor = SKU2NodeID(exception_logfile = exception_logfile)
 for sku in SKUs:
 	nodeID = extractor.get_node_id_for_sku(sku = sku)
 	if(not nodeID):
-		error_logger.error(f"Couldn't find node ID for SKU {sku}")
+		logger.error(f"Couldn't find node ID for SKU {sku}")
 		continue
 	SKU_2_NodeID[sku] = nodeID
 	NodeID_2_SKU[nodeID] = sku
 
+	CN = ContentNode(nodeID = nodeID)
+
+	if('es-MX' in CN.translations['by_status']['published']):
+		log.info(f"SKU {sku} with node ID {nodeID} is already published in es-MX. Continuing")
+		continue
+
+	if('en-int' in CN.translations['by_status']['published']):
+		if(not 'es' in CN.translations['by_status']['published']):
+			if(not 'es-ES')
+
+
 	try:
 		oFile.write(f"sku={sku} nodeID={nodeID}\n")
 	except Exception as e:
-		error_logger.fatal(f"Couldn't write 'sku={sku} nodeID={nodeID}' into output file '{output_file}'")
+		logger.fatal(f"Couldn't write 'sku={sku} nodeID={nodeID}' into output file '{output_file}'")
 	logger.info(f"Found node ID {nodeID} for SKU {sku}")
 oFile.close()

@@ -4,7 +4,6 @@ from drupal_browser import browser
 from drupal_configuration import *
 from drupal_connection import DConn
 from selenium.webdriver.support.select import Select
-import re
 import pprint
 
 
@@ -18,10 +17,6 @@ class DrupalNode():
 		self.meta: dict = {
 			"node_type": "",
 			"language": "",
-			"last_saved": "",
-			"author": "",
-			"moderation_status": "",
-			"description": ""
 		}
 		self.content: dict = {}
 		self.translations: dict = {
@@ -34,69 +29,144 @@ class DrupalNode():
 		if(not self.isMedia):
 			self._read_node_meta_data()
 			self._read_node_content()
-			self._read_node_translations()
+			if(self.meta['node_type'] in DC.get('server.translatable_content_types')
+				):
+				self._read_node_translations()
+
 			DConn.load_node_edit_url(nodeID = self._nodeID)
 		else:
 			self._read_media_meta_data()
 			# self._read_media_content()
-			if(self.meta['node_type'] in [
-				'document', 
-				'embedded_video', 
-				'image', 
-				'pim_document', 
-				'pim_image', 
-				'pim_proof_of_performance', 
-				'press_image',
-				'private_document',
-				'private_image'
-				]
+			if(self.meta['node_type'] in DC.get('server.translatable_content_types')
 				):
 				self._read_node_translations()
 
 
-		# pprint.pprint(self.meta)
-		# print("----------------------------")
-		# pprint.pprint(self.content)
-		# print("----------------------------")
-		# pprint.pprint(self.translations)
+	def add_translation(self, target_lang: str, src_lang: str = 'en-int', moderation_status: str = 'draft'):
+		"this method creates a translation of the node in a passed language (if it doesn't already exist) based on a passed language, language/country version"
+		if(not self.is_translatable()):
+			log.fatal(f"[DrupalNode.add_translation()] The node's ({self._nodeID}) content type '{self.meta['node_type']}' is not translatable. Translatable content and media types are: {DC.get('server.translatable_content_types')}")
+		if(not self.check_languages([target_lang, src_lang])):
+			log.fatal(f"[DrupalNode.add_translation()] Target '{target_lang}' or source language '{src_lang}' is not available in the configured languages, which are '{DC.get('server.languages')}'")
+		if(not self.get_translation_status(lang = target_lang) or self.is_translated(lang = target_lang)):
+			log.fatal(f"Translation status for {target_lang} is '{self.get_translation_status(lang = target_lang)}'. It has to be present and '{DC.get('nodes.translations.no_translation_status')}' in order to be able to add a new translation.")
+		if(not self.isMedia and not moderation_status in DC.get('server.moderation_status')):
+			log.fatal(f"[DrupalNode.translate()] Moderation status '{moderation_status}' is not in the configured list of moderation status '{DC.get('server.moderation_status').keys()}'")
+		translation_url: str = DConn.get_server_url() + '/' + target_lang
+		if(not self.isMedia):
+			translation_url = translation_url + DC.get('server.node_add_translation_prefix') + self._nodeID + DC.get('server.node_add_translation_postfix')
+		else:
+			translation_url = translation_url + DC.get('server.media_add_translation_prefix') + self._nodeID + DC.get('server.media_add_translation_postfix')
+		translation_url = translation_url + src_lang + '/' + target_lang
+		browser.load_url(url = translation_url)
+		if(not self.isMedia):
+			self.set_moderation_status(status = moderation_status)
+		else:
+			# media is only either 'published' or 'Not translated'. There is no moderation status.
+			moderation_status = 'published'
+		self.translations['by_language']['status'][target_lang] = moderation_status
+		self.translations['by_language']['title'][target_lang] = self.translations['by_language']['title'][src_lang]
+		if(moderation_status in self.translations['by_status']):
+			self.translations['by_status'][moderation_status].append(target_lang)
+		else:
+			self.translations['by_status'][moderation_status] = [target_lang]
+		if(self.isMedia):
+			browser.interact(key = 'nodes.interactions.save_media')
+		else:
+			browser.interact(key = 'nodes.interactions.save_node')
 
+
+	def delete_translation(self, lang: str) -> bool:
+		"This attribute deletes the passed target language's translation (if present). The target language can not be the server's default language, because that deletes the node with all its translations at once. Use delete_node() for that."
+		if(lang == DC.get('default_language')):
+			log.fatal(f"[DrupalNode.delete_translation()] Attempted deletion of the server's default language '{lang}' not possible, because it would delete all other translations along with it. Use delete_node() atribute instead")
+		if(not self.is_translated(lang = lang)):
+			log.error(f"[DrupalNode.delete_translation()] No translation in '{lang}' found for deletion,")
+			return False
+
+		deletion_url: str = DConn.get_server_url() + '/' + lang
+
+		if(not self.isMedia):
+			deletion_url = deletion_url + DC.get('server.node_delete_translation_prefix') + self._nodeID + DC.get('server.node_delete_translation_postfix')
+		else:
+			deletion_url = deletion_url + DC.get('server.media_delete_translation_prefix') + self._nodeID + DC.get('server.media_delete_translation_postfix')
+		browser.load_url(url = deletion_url)
+		if(self.isMedia):
+			browser.interact(key = 'nodes.interactions.delete_media')
+		else:
+			browser.interact(key = 'nodes.interactions.delete_node')
+		moderation_status = self.translations['by_language']['status'][lang]
+		self.translations['by_language']['status'][lang] = DC.get('nodes.translations.no_translation_status')
+		self.translations['by_language']['title'][lang] = ''
+		self.translations['by_status'][moderation_status].pop(self.translations['by_status'][moderation_status].index(lang))
+
+
+	def check_languages(self, languages = []) -> bool:
+		"Returns True if the languages are configured"
+		for lang in languages:
+			if(not self.check_language(lang)):
+				return False
+		return True
+
+
+	def check_language(self, lang: str) -> bool:
+		"Returns True if the language is configured"
+		if(lang in DC.get('server.languages')):
+			return True
+		return False
+
+
+	def is_translatable(self) -> bool:
+		"Checks if the node's content type is translatable"
+		if(not self.meta['node_type'] in DC.get('server.translatable_content_types')
+				):
+			return False
+		return True
+
+
+	def is_translated(self, lang: str) -> bool:
+		"checks if a given language has a translation"
+		translation_status = self.get_translation_status(lang = lang)
+		if(not translation_status or translation_status == DC.get('nodes.translations.no_translation_status')):
+			return False
+		return True
+
+
+	def get_translation_status(self, lang: str) -> str:
+		"returns the translation status"
+		if(not lang in self.translations['by_language']['status']):
+			return ''
+		return self.translations['by_language']['status'][lang]
+
+
+	def pprint(self):
+		self.pprint_meta()
+		self.pprint_translations()
+
+	def pprint_meta(self):
+		print(f"\nMeta data for node {self._nodeID}")
+		print("--------------------------")
+		pprint.pprint(self.meta)
+
+	def pprint_translations(self):
+		print(f"\nTranslation data for node {self._nodeID}")
+		print("--------------------------------")
+		pprint.pprint(self.translations)
 
 	def _read_node_meta_data(self):
 		"reads the node url in edit mode and extracts all meta data from the side bar"
-		matches = None
 		DConn.load_node_edit_url(nodeID = self._nodeID)
 		# getting the sidebar with meta data
 		sidebar = browser.get_element(key = 'nodes.meta_data.existence', strict = True)
 		if(not sidebar):
 			log.fatal(f"[DrupalNode._read_node_meta_data()] The node with ID {self._nodeID} doesn't have a meta data side bar.")
 		self.meta['node_type'] = browser.get_value_of_attribute(key = 'server.content_type_body_class_attribute')
-		matches = re.search(DC.get('server.content_type_body_classes_regexp'), self.meta['node_type'])
-		if(matches):
-			self.meta['node_type'] = matches.group(1)
-		else:
-			log.fatal(f"[DrupalNode._read_node_meta_data()] Couldn't identify node type in body class '{self.meta['node_type']}'")
 		self.meta['language'] = DC.get('server.default_language')
-		self.meta['last_saved'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.last_saved')
-		matches = re.search(DC.get('nodes.meta_data.last_saved.regexp'), self.meta['last_saved'])
-		if(matches):
-			self.meta['last_saved'] = matches.group(1)
-		else:
-			log.fatal(f"[DrupalNode._read_node_meta_data()] Couldn't find last saved in meta data of node {self._nodeID} in text '{self.meta['last_saved']}' with regular expresseion '{DC.get('nodes.meta_data.last_saved.regexp')}'")
-		self.meta['last_saved'] = datetime.strptime(self.meta['last_saved'], DC.get('server.timestamp_input_format')).strftime(DC.get('server.timestamp_output_format'))
-		self.meta['author'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.author')
-		matches = re.search(DC.get('nodes.meta_data.author.regexp'), self.meta['author'])
-		if(matches):
-			self.meta['author'] = matches.group(1)
-		else:
-			log.info(f"[DrupalNode._read_node_meta_data()] Couldn't find author in meta data of node {self._nodeID} in text '{self.meta['author']}' with regular expresseion '{DC.get('nodes.meta_data.author.regexp')}'. Assuming empty author.")
-			self.meta['author'] = ''
-		self.meta['moderation_status'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.moderation_status')
-		matches = re.search(DC.get('nodes.meta_data.moderation_status.regexp'), self.meta['moderation_status'])
-		if(matches):
-			self.meta['moderation_status'] = DC.get('server.moderation_status_display_names.' + matches.group(1))
-		else:
-			log.fatal(f"[DrupalNode._read_node_meta_data()] Couldn't find moderation status in meta data of node {self._nodeID} in text '{self.meta['moderation_status']}' with regular expresseion '{DC.get('nodes.meta_data.moderation_status.regexp')}'")
-		self.meta['description'] = browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.description')
+		self.meta.update({'last_modified': browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.last_modified')})
+		self.meta['last_modified'] = datetime.strptime(self.meta['last_modified'], DC.get('server.timestamp_input_format')).strftime(DC.get('server.timestamp_output_format'))
+		self.meta.update({'author': browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.author')})
+		self.meta,update({'moderation_status': browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.moderation_status')})
+		self.meta.update({'description': browser.get_value_of_attribute(element = sidebar, key = 'nodes.meta_data.description')})
 
 
 	def _read_node_content(self):
@@ -123,6 +193,7 @@ class DrupalNode():
 			if(not title):
 				title = ''
 			translation_status = browser.get_value_of_attribute(element = element, key = 'nodes.translations.row_structure.translation_status')
+			translation_status = DC.get('server.moderation_status_display_names.' + translation_status)
 			self.translations['by_language']['status'][language] = translation_status
 			self.translations['by_language']['title'][language] = title
 			if(not translation_status in self.translations['by_status']):
@@ -133,10 +204,10 @@ class DrupalNode():
 
 	def _read_media_meta_data(self):
 		"Reads the media url in edit mode and extracts all meta data from the side bar. Unfortunately we have to jump through hoops to find out the exact media type first"
-		matches = None
 		DConn.load_media_edit_url(nodeID = self._nodeID)
 
 		media_type = browser.get_value_of_attribute(key = 'server.media_type_identifier')
+		print(f"Found media_type {media_type}")
 		if(media_type and media_type in DC.get('server.media_type_display_name')):
 			media_type = DC.get('server.media_type_display_name.' + media_type)
 		if(not media_type):
@@ -149,10 +220,16 @@ class DrupalNode():
 					media_type = pim_type
 					break
 		if(not media_type):
-			log.fatal(f"[DrupalNode._read_media_meta_data()] Couldn't find ")
+			log.fatal(f"[DrupalNode._read_media_meta_data()] Couldn't find a media type '{media_type}'")
 		self.meta['node_type'] = media_type
+		self.meta['language'] = DC.get('server.default_language')
+		self.meta.update({'author': browser.get_value_of_attribute(key = 'nodes.meta_data.authored_by')})
+		date = browser.get_value_of_attribute(key = 'nodes.meta_data.authored_date') + '_' + browser.get_value_of_attribute(key = 'nodes.meta_data.authored_time')
+		self.meta.update({'last_modified': date})
+		self.meta.update({'file_size': browser.get_value_of_attribute(key = 'nodes.meta_data.file_size')})
+		self.meta.update({'file_url': browser.get_value_of_attribute(key = 'nodes.meta_data.file_url')})
+		self.meta.update({'file_url_alias': browser.get_value_of_attribute(key = 'nodes.meta_data.file_url_alias')})
 
-		print(f"Found node {self._nodeID} is of media type '{media_type}'")
 
 
 class ContentNode(DrupalNode):
@@ -202,7 +279,7 @@ class ContentNode(DrupalNode):
 		browser.interact(key = 'nodes.interactions.save_node')
 		DConn.load_node_edit_url(nodeID = self._nodeID)
 
-		
+
 
 class MediaNode(DrupalNode):
 	"This class implements media nodes"

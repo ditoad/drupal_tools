@@ -9,17 +9,29 @@
     },
     "server":
     {
-        "proto": "https://",
+        "default_language": "en-int",
         "default_language_uri_prefix": "/en-int",
         "login_uri": "/user/login",
-        "default_language": "en-int",
-        "root_language": "en-int",
-        "node_edit_prefix": "/node/",
-        "node_edit_postfix": "/edit",
-        "node_translations_postfix": "/translations",
-        "media_edit_prefix": "/media/",
+        "media_add_translation_postfix": "/edit/translations/add/",
+        "media_add_translation_prefix": "/media/",
+        "media_delete_postfix": "/delete",
+        "media_delete_prefix": "/media/",
+        "media_delete_translation_postfix": "/delete",
+        "media_delete_translation_prefix": "/media/",
         "media_edit_postfix": "/edit",
+        "media_edit_prefix": "/media/",
         "media_translations_postfix": "/edit/translations",
+        "node_add_translation_postfix": "/translations/add/",
+        "node_add_translation_prefix": "/node/",
+        "node_delete_postfix": "/delete",
+        "node_delete_prefix": "/node/",
+        "node_delete_translation_postfix": "/delete",
+        "node_delete_translation_prefix": "/node/",
+        "node_edit_postfix": "/edit",
+        "node_edit_prefix": "/node/",
+        "node_translations_postfix": "/translations",
+        "proto": "https://",
+        "root_language": "en-int",
         "timestamp_input_format": "%m/%d/%Y - %H:%M",
         "timestamp_output_format": "%Y-%m-%d_%H:%M:%S",
         "languages":
@@ -294,7 +306,6 @@
             "Private document": "private_document",
             "Private image": "private_image"
         },
-
         "moderation_status":
         {
             "draft": "default-draft",
@@ -305,11 +316,11 @@
         },
         "moderation_status_display_names":
         {
-            "Not translated": "not-translated",
+            "Not translated": "not_translated",
             "Draft": "draft",
             "Unpublished": "unpublished",
             "Confidential": "confidential",
-            "Ready for review": "ready-for-review",
+            "Ready for review": "ready_for_review",
             "Published": "published"
         },
         "paragraphs":
@@ -344,6 +355,28 @@
             "Testimonial",
             "Text",
             "Title and text"
+        ],
+        "translatable_content_types":
+        [
+            "contact_options",
+            "dealer_store",
+            "event",
+            "gallery",
+            "landing_page",
+            "leica_story",
+            "news",
+            "press_release",
+            "product",
+            "product_subpage",
+            "document",
+            "embedded_video",
+            "image",
+            "pim_document",
+            "pim_image",
+            "pim_proof_of_performance",
+            "press_image",
+            "private_document",
+            "private_image"
         ]
     },
     "login":
@@ -685,11 +718,29 @@
                 "method": "By.ID",
                 "value": "edit-submit--2--gin-edit-form",
                 "interaction": "click"
+            },
+            "delete_node":
+            {
+                "method": "By.ID",
+                "value": "edit-submit",
+                "interaction": "click"
+            },
+            "save_media":
+            {
+                "method": "By.ID",
+                "value": "edit-submit",
+                "interaction": "click"
+            },
+            "delete_media":
+            {
+                "method": "By.ID",
+                "value": "edit-submit",
+                "interaction": "click"
             }
         },
         "translations":
         {
-            "no_translation_status": "Not translated",
+            "no_translation_status": "not_translated",
             "rows":
             {
                 "method": "By.TAG_NAME",
@@ -737,7 +788,7 @@
                 {
                     "method": "By.TAG_NAME",
                     "value": "td",
-                    "index": 2,
+                    "index": -2,
                     "attribute": "text"
                 }
             }
@@ -787,6 +838,49 @@
                 "value": "edit-field-meta-0-basic-description",
                 "attribute": "innerHTML",
                 "regexp": "^Current state\\s+(.*)\\s*"
+            },
+            "authored_by":
+            {
+                "method": "By.ID",
+                "value": "edit-uid-0-target-id",
+                "attribute": "value",
+                "regexp": "^(.*)\\s+\\("
+            },
+            "authored_date":
+            {
+                "method": "By.ID",
+                "value": "edit-created-0-value-date",
+                "attribute": "value"
+            },
+            "authored_time":
+            {
+                "method": "By.ID",
+                "value": "edit-created-0-value-time",
+                "attribute": "value"
+            },
+            "file_size":
+            {
+                "method": "By.CLASS_NAME",
+                "value": "file__size",
+                "attribute": "text",
+                "regexp": "\\(([^\\)]+)\\)"
+            },
+            "file_url":
+            {
+                "method": "By.CLASS_NAME",
+                "value": "form-managed-file__main",
+                "attribute": "href",
+                "find_elements":
+                {
+                    "method": "By.TAG_NAME",
+                    "value": "a"
+                }
+            },
+            "file_url_alias":
+            {
+                "method": "By.ID",
+                "value": "edit-path-0-alias",
+                "attribute": "value"
             }
         }
     }

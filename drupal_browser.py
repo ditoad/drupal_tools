@@ -13,6 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager 
 import configparser
 import os.path
+import re
 import urllib.parse
 DEFAULT_CREDENTIALS_DIRECTORY:str = "~/.drupal"
 DEFAULT_CREDENTIALS_FILENAME:str = "credentials.ini"
@@ -102,16 +103,28 @@ class Browser():
 			except Exception as e:
 				log.error(f"[drupal_browser.get_value_of_attribute()] Element '{element.get_attribute('outerHTML')}' doesn't have a {attr} attribute. Error: '{e}'")
 		elem = self._find_element(element = element, key = key)
+		return_value: str = ''
 		if(elem == None):
 			return None
 		if(not attr and 'attribute' in DC.get(key)):
 			attr = DC.get(key + '.attribute')
 		try:
 			if(attr == "text"):
-				return elem.text
-			return elem.get_attribute(attr)
+				return_value = elem.text
+			else:
+				return_value = elem.get_attribute(attr)
 		except Exception as e:
-			log.error(f"[drupal_browser.get_value_of_attribute()] Element {elem.get_attribute('outerHTML')} for key '{key}' doesn't have a {attr} attribute.")
+			log.info(f"[drupal_browser.get_value_of_attribute()] Key '{key}' doesn't have a '{attr}' attribute in element '{elem.get_attribute('outerHTML')}'.")
+			return ''
+		if(not 'regexp' in DC.get(key)):
+			return return_value
+		matches = re.search(DC.get(key + '.regexp'), return_value)
+		if(matches):
+			return matches.group(1)
+		else:
+			log.info(f"[Browser.get_value_of_attribute()] Couldn't find regexp '{DC.get(key + '.regexp')}'in '{return_value}'")
+			return return_value
+
 
 
 	def has_element(self, element = None, key: str = '') -> bool:

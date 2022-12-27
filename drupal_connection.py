@@ -25,10 +25,15 @@ class DrupalConnection():
 		self._basic_authentication_username: str = basic_authentication_username
 		self._basic_authentication_password: str = basic_authentication_password
 		self._login()
-		self._base_url: str = DC.get('server.proto') + self._url + DC.get('server.default_language_uri_prefix')
+		self._server_url: str = DC.get('server.proto') + self._url
+		self._base_url: str = self._server_url + DC.get('server.default_language_uri_prefix')
 
-	def get_server_base_url(self):
+	def get_server_base_url(self) -> str:
 		return self._base_url
+
+
+	def get_server_url(self) -> str:
+		return DC.get('server.proto') + self._url
 
 
 	def load_node_edit_url(self, nodeID: str = None) -> bool:
