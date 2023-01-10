@@ -25,7 +25,7 @@ try:
 	iFile = open(SKU_file, "r")
 	oFile = open(output_file, "w")
 except Exception as e:
-	error_logger.fatal(f"[mx-publisher] Couldn't open SKU file '{SKU_file}'. Error message: {e}")
+	error_logger.fatal(f"Couldn't open SKU file '{SKU_file}'. Error message: {e}")
 
 while True:
 	sku_line_count += 1
@@ -41,12 +41,19 @@ extractor = SKU2NodeID(exception_logfile = exception_logfile)
 for sku in SKUs:
 	nodeID = extractor.get_node_id_for_sku(sku = sku)
 	if(not nodeID):
-		logger.error(f"Couldn't find node ID for SKU {sku}")
+		error_logger.error(f"Couldn't find node ID for SKU {sku}")
 		continue
 	SKU_2_NodeID[sku] = nodeID
 	NodeID_2_SKU[nodeID] = sku
 
+	CN = None
 	CN = ContentNode(nodeID = nodeID)
+
+	en_int_moderation_status = None
+	es_translation_status = None
+	es_ES_translation_status = None
+	es_MX_translation_status = None
+
 
 	en_int_moderation_status = CN.get_moderation_status()
 	es_translation_status = CN.get_translation_status(lang = 'es')
@@ -60,9 +67,12 @@ for sku in SKUs:
 	print(f"es-ES: {es_ES_translation_status}")
 	print(f"es-MX: {es_MX_translation_status}")
 
+
+
+
 	try:
 		oFile.write(f"sku={sku} nodeID={nodeID}\n")
 	except Exception as e:
-		logger.fatal(f"Couldn't write 'sku={sku} nodeID={nodeID}' into output file '{output_file}'")
+		error_logger.fatal(f"Couldn't write 'sku={sku} nodeID={nodeID}' into output file '{output_file}'")
 	logger.info(f"Found node ID {nodeID} for SKU {sku}")
 oFile.close()

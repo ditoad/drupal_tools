@@ -17,6 +17,7 @@ class DrupalDashboard():
 		self._filters: dict = filters
 		self._baseurl = DConn.get_server_base_url()
 		self._baseurl = self._baseurl + DC.get(self._dashboard_key + '.uri')
+		self._view
 		self._reset()
 		if(self._filters):
 			self.set_filters()
@@ -95,7 +96,7 @@ class DrupalDashboard():
 		self._set_pagination()
 		self._assemble_url()
 		log.debug(f"[DrupalDashboard.load()] Loading {self._dashboard_key} from {self._url}")
-		browser.load_url(self._url)
+		browser.load_url(url = self._url, lang = DC.get('server.default_language'), view = self._view)
 		self._count_rows_on_current_page()
 		if(self._max_pages == -1):
 			self._get_max_pages()
@@ -301,7 +302,8 @@ class DrupalDashboard():
 class ContentDashboard(DrupalDashboard):
 	"Implementation of the content dashboard based on the super class DrupalDashboard. Content dashboard specific methods are implemented or overwritten here."
 	def __init__(self, filters: dict = None):
-		super().__init__('dashboards.content_dashboard', filters = filters)
+		self._view = 'dashboard_content_overview'
+		super().__init__(dashboard_key = 'dashboards.content_dashboard', filters = filters)
 
 
 	# def load(self):
@@ -313,14 +315,16 @@ class ContentDashboard(DrupalDashboard):
 class FilesDashboard(DrupalDashboard):
 	"Implementation of the content dashboard based on the super class DrupalDashboard. Content dashboard specific methods are implemented or overwritten here."
 	def __init__(self, filters: dict = None):
-		super().__init__('dashboards.files_dashboard', filters = filters)
+		self._view = 'dashboard_files'
+		super().__init__(dashboard_key = 'dashboards.files_dashboard', filters = filters)
 
 
 
 class MediaDashboard(DrupalDashboard):
 	"Implementation of the content dashboard based on the super class DrupalDashboard. Content dashboard specific methods are implemented or overwritten here."
 	def __init__(self, filters: dict = None):
-		super().__init__('dashboards.media_dashboard', filters = filters)
+		self._view = 'dashboard_media'
+		super().__init__(dashboard_key = 'dashboards.media_dashboard', filters = filters)
 
 
 	# def load(self):
@@ -332,7 +336,8 @@ class MediaDashboard(DrupalDashboard):
 class ProductDashboard(DrupalDashboard):
 	"Implementation of the product dashboard based on the super class DrupalDashboard. Product dashboard specific methods are implemented or overwritten here."
 	def __init__(self, filters: dict = None):
-		super().__init__('dashboards.product_dashboard', filters = filters)
+		self._view = 'dashboard_products'
+		super().__init__(dashboard_key = 'dashboards.product_dashboard', filters = filters)
 
 
 	# def load(self):

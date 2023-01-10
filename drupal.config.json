@@ -378,6 +378,30 @@
             "press_image",
             "private_document",
             "private_image"
+        ],
+        "views": [
+            "login",
+            "dashboard_content_overview",
+            "dashboard_content_moderated",
+            "dashboard_paragraphs",
+            "dashboard_products",
+            "dashboard_contacts_order",
+            "dashboard_files",
+            "dashboard_media",
+            "node_add",
+            "node_view",
+            "node_edit",
+            "node_delete",
+            "node_revisions",
+            "node_clone",
+            "node_translations",
+            "node_add_translation",
+            "node_edit_translation",
+            "node_delete_translation",
+            "media_edit",
+            "media_translations",
+            "media_add_translation",
+            "media_edit_translation"
         ]
     },
     "login":

@@ -28,6 +28,9 @@ class Browser():
 	def __init__(self, credentials_file:str = expanduser(os.path.join(DEFAULT_CREDENTIALS_DIRECTORY, DEFAULT_CREDENTIALS_FILENAME)), credentials_group: str = DEFAULT_CREDENTIALS_GROUP):
 		self._credentials_file = credentials_file
 		self._credentials_group = credentials_group
+		self._language: str = None
+		# as defined in DC.get('server.views') []
+		self._view: str = None
 		self._url = ''
 		self.ini_data = {}
 		self._read_credentials_file()
@@ -37,9 +40,15 @@ class Browser():
 		self._browser = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
 
 
-	def load_url(self, url: str):
+	def load_url(self, url: str, view: str, lang: str):
 		"Method that retrieves an URL in the browser"
+		if(not view in DC.get('server.views')):
+			log.fatal(f"[Browser.load_url] The passed view '{view}' is not in the configured views '{DC.get('server.views')}'")
+		if(not lang in DC.get('server.languages')):
+			log.fatal(f"[Browser.load_url] The passed language '{lang}' is not in the configured views '{DC.get('server.languages').keys()}'")
 		self._url = url
+		self._view = view
+		self._language = lang
 		try:
 			log.debug(f"[Browser.load_url()] Trying to load url {self._url}.")
 			self._browser.get(self._url)
@@ -48,9 +57,16 @@ class Browser():
 			return False
 		return True
 
+	def get_language(self) -> str:
+		return self._language
+
 
 	def get_url(self) -> str:
 		return self._url
+
+
+	def get_view(self) -> str:
+		return self._view
 
 
 	def url_encode_string(self, string: str = '') -> str:

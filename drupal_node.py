@@ -7,13 +7,20 @@ from selenium.webdriver.support.select import Select
 import pprint
 
 
+# To Dos: Add the view name and language to the BROWSER
+
 
 class DrupalNode():
 	"This is a super class that provides mutual attributes across normal nodes and media nodes. Content type specific attributes have to be implemented in inheriting classes."
 
+
+	# To be implemented - adding a new node to Drupal. Currently there is no need for automatically adding nodes (yet)
+	# def __init__(self, node_type: str)
+
+
+	# This init attribute method loads existing nodes and initializes all meta data
 	def __init__(self, nodeID: str, isMedia: bool = False):
 		self._nodeID: str = nodeID
-		self._view: str = ''
 		self.isMedia: bool = isMedia
 		self.meta: dict = {
 			"node_type": "",
@@ -28,15 +35,12 @@ class DrupalNode():
 			"by_status":{}
 		}
 		if(not self.isMedia):
-			print(f"Reading meta data of content node {self._nodeID}")
 			self._read_node_meta_data()
-			self.pprint_meta()
+			# self.pprint_meta()
 			self._read_node_content()
-
 			if(self.meta['node_type'] in DC.get('server.translatable_content_types')
 				):
 				self._read_node_translations()
-
 			DConn.load_node_edit_url(nodeID = self._nodeID)
 		else:
 			self._read_media_meta_data()
@@ -52,8 +56,12 @@ class DrupalNode():
 			log.fatal(f"[DrupalNode.add_translation()] The node's ({self._nodeID}) content type '{self.meta['node_type']}' is not translatable. Translatable content and media types are: {DC.get('server.translatable_content_types')}")
 		if(not self.check_languages([target_lang, src_lang])):
 			log.fatal(f"[DrupalNode.add_translation()] Target '{target_lang}' or source language '{src_lang}' is not available in the configured languages, which are '{DC.get('server.languages')}'")
+		if(not self.is_translated(lang = src_lang)):
+			log.error(f"Translation status for source language '{src_lang}' is '{self.get_translation_status(lang = src_lang)}'. It has to be present and '{DC.get('nodes.translations.no_translation_status')}' in order to be able to add a new translation.")
+			return
 		if(not self.get_translation_status(lang = target_lang) or self.is_translated(lang = target_lang)):
-			log.fatal(f"Translation status for {target_lang} is '{self.get_translation_status(lang = target_lang)}'. It has to be present and '{DC.get('nodes.translations.no_translation_status')}' in order to be able to add a new translation.")
+			log.error(f"Translation status for target language '{target_lang}' is '{self.get_translation_status(lang = target_lang)}'. It has to be present and '{DC.get('nodes.translations.no_translation_status')}' in order to be able to add a new translation. You can set the moderation status of a previously translated node, but you can't add an already present translation.")
+			return
 		if(not self.isMedia and not moderation_status in DC.get('server.moderation_status')):
 			log.fatal(f"[DrupalNode.translate()] Moderation status '{moderation_status}' is not in the configured list of moderation status '{DC.get('server.moderation_status').keys()}'")
 		translation_url: str = DConn.get_server_url() + '/' + target_lang
@@ -62,7 +70,8 @@ class DrupalNode():
 		else:
 			translation_url = translation_url + DC.get('server.media_add_translation_prefix') + self._nodeID + DC.get('server.media_add_translation_postfix')
 		translation_url = translation_url + src_lang + '/' + target_lang
-		browser.load_url(url = translation_url)
+		browser.load_url(url = translation_url, lang = target_lang, view = 'node_add_translation')
+		self._language = target_lang
 		if(not self.isMedia):
 			self.set_moderation_status(status = moderation_status)
 		else:
@@ -94,7 +103,7 @@ class DrupalNode():
 			deletion_url = deletion_url + DC.get('server.node_delete_translation_prefix') + self._nodeID + DC.get('server.node_delete_translation_postfix')
 		else:
 			deletion_url = deletion_url + DC.get('server.media_delete_translation_prefix') + self._nodeID + DC.get('server.media_delete_translation_postfix')
-		browser.load_url(url = deletion_url)
+		browser.load_url(url = deletion_url, view = 'node_delete_translation', lang = lang)
 		if(self.isMedia):
 			browser.interact(key = 'nodes.interactions.delete_media')
 		else:
@@ -161,20 +170,47 @@ class DrupalNode():
 		self.pprint_meta()
 		self.pprint_translations()
 
+
 	def pprint_meta(self):
 		print(f"\nMeta data for node {self._nodeID}")
 		print("--------------------------")
 		pprint.pprint(self.meta)
+
 
 	def pprint_translations(self):
 		print(f"\nTranslation data for node {self._nodeID}")
 		print("--------------------------------")
 		pprint.pprint(self.translations)
 
+
+	def load_edit_page(self):
+		if(self.isMedia):
+			DConn.load_media_edit_url(nodeID = self._nodeID)
+		else:
+			DConn.load_node_edit_url(nodeID = self._nodeID)
+
+
+	def load_translations_overview_page(self):
+		if(self.isMedia):
+			DConn.load_media_translation_url(nodeID = self._nodeID)
+		else:
+			DConn.load_node_translations_overview_url(nodeID = self._nodeID)
+
+	
+	def load_translation_edit_page(self, lang: str = None):
+		if(not lang):
+			log.fatal(f"[DrupalNode.load_translation_edit_page()] No language passed for loading translation page for Drupal node id {self._nodeID}")
+		if(not self.check_language(lang = lang)):
+			log.fatal(f"[DrupalNode.load_translation_edit_page()] Language '{lang}' is not available in the configured languages of this Drupal server.")
+		if(not self.is_translated(lang = lang)):
+			log.fatal(f"[DrupalNode.load_translation_edit_page()] Drupal node id {self._nodeID} is not translated in passed language '{lang}'")
+		DConn.load_node_edit_url(nodeID = self._nodeID, lang = lang)
+
+
 	def _read_node_meta_data(self):
 		"reads the node url in edit mode and extracts all meta data from the side bar"
-		DConn.load_node_edit_url(nodeID = self._nodeID)
-		# getting the sidebar with meta data
+		self.load_edit_page()
+		# getting the sidebar with meta data for speeding up extraction of data (smaller DOM to look into)
 		sidebar = browser.get_element(key = 'nodes.meta_data.existence', strict = True)
 		if(not sidebar):
 			log.fatal(f"[DrupalNode._read_node_meta_data()] The node with ID {self._nodeID} doesn't have a meta data side bar.")
@@ -194,12 +230,8 @@ class DrupalNode():
 
 
 	def _read_node_translations(self):
-		if(self.isMedia):
-			DConn.load_media_translation_url(nodeID = self._nodeID)
-			rows = browser.get_elements(key = 'nodes.translations.rows')
-		else:
-			DConn.load_node_translation_url(nodeID = self._nodeID)
-			rows = browser.get_elements(key = 'nodes.translations.rows')
+		self.load_translations_overview_page()
+		rows = browser.get_elements(key = 'nodes.translations.rows')
 		for element in rows:
 			language_display_name = browser.get_value_of_attribute(element = element, key = 'nodes.translations.row_structure.language_display_name')
 			if(not language_display_name in DC.get('server.language_display_names')):
@@ -222,8 +254,7 @@ class DrupalNode():
 
 	def _read_media_meta_data(self):
 		"Reads the media url in edit mode and extracts all meta data from the side bar. Unfortunately we have to jump through hoops to find out the exact media type first"
-		DConn.load_media_edit_url(nodeID = self._nodeID)
-
+		self.load_edit_page()
 		media_type = browser.get_value_of_attribute(key = 'server.media_type_identifier')
 		print(f"Found media_type {media_type}")
 		if(media_type and media_type in DC.get('server.media_type_display_name')):
@@ -291,11 +322,21 @@ class ContentNode(DrupalNode):
 			log.fatal(f"[DrupalNode.set_moderation_status()] Passed moderation status '{status}' is not in the list of configured moderation status, which are: '{DC.get('server.moderation_status').keys()}'")
 		sel = Select(browser.get_element(key = 'nodes.interactions.change_status', strict = True))
 		sel.select_by_value(status)
+		self.meta.update({'moderation_status': status})
+
+
+	def set_translation_moderation_status(self, lang: str = None, status: str = 'draft'):
+		if(not lang):
+			log.fatal(f"[DrupalNode.set_translation_moderation_status()] No language passed for setting translation status for Drupal node id {self._nodeID}")
+		if(not status in DC.get('server.moderation_status')):
+			log.fatal(f"[DrupalNode.set_translation_moderation_status()] Passed moderation status '{status}' is not in the list of configured moderation status, which are: '{DC.get('server.moderation_status').keys()}'")
+		sel = Select(browser.get_element(key = 'nodes.interactions.change_status', strict = True))
+		sel.select_by_value(status)
 
 
 	def save(self):
 		browser.interact(key = 'nodes.interactions.save_node')
-		DConn.load_node_edit_url(nodeID = self._nodeID)
+		self.load_edit_page()
 
 
 

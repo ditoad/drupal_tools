@@ -26,6 +26,7 @@ class DrupalConnection():
 		self._basic_authentication_password: str = basic_authentication_password
 		self._login()
 		self._server_url: str = DC.get('server.proto') + self._url
+		self._default_language =  DC.get('server.default_language')
 		self._base_url: str = self._server_url + DC.get('server.default_language_uri_prefix')
 
 	def get_server_base_url(self) -> str:
@@ -36,20 +37,28 @@ class DrupalConnection():
 		return DC.get('server.proto') + self._url
 
 
-	def load_node_edit_url(self, nodeID: str = None) -> bool:
+	def load_node_edit_url(self, nodeID: str = None, lang: str = DC.get('server.default_language')) -> bool:
 		if(not nodeID):
 			log.fatal(f"[DrupalConnection.load_node_edit_url()] Callimg attribute withoug nodeID not possible")
 		if(type(nodeID) != str):
 			nodeID = str(nodeID)
-		return browser.load_url(self._base_url + DC.get('server.node_edit_prefix') + nodeID + DC.get('server.node_edit_postfix'))
+		return browser.load_url(self._server_url + '/' + lang + DC.get('server.node_edit_prefix') + nodeID + DC.get('server.node_edit_postfix'), lang = lang, view = 'node_edit')
 
 
-	def load_node_translation_url(self, nodeID: str = None) -> bool:
+	def load_node_translations_overview_url(self, nodeID: str = None) -> bool:
 		if(not nodeID):
 			log.fatal(f"[DrupalConnection.load_node_translation_url()] Calling attribute withoug nodeID not possible")
 		if(type(nodeID) != str):
 			nodeID = str(nodeID)
-		return browser.load_url(self._base_url + DC.get('server.node_edit_prefix') + nodeID + DC.get('server.node_translations_postfix'))
+		return browser.load_url(self._base_url + DC.get('server.node_edit_prefix') + nodeID + DC.get('server.node_translations_postfix'), lang = self._default_language, view = 'node_translations')
+
+
+	def load_node_translation_edit_url(self, nodeID: str = None, lang: str = None) -> bool:
+		if(not nodeID):
+			log.fatal(f"[DrupalConnection.load_node_translation_url()] Calling attribute withoug nodeID not possible")
+		if(type(nodeID) != str):
+			nodeID = str(nodeID)
+		return browser.load_url(self._server_url + '/' + lang + DC.get('server.node_edit_prefix') + nodeID + DC.get('server.node_translations_postfix'), lang = lang, view = 'node_edit_translation')		
 
 
 	def load_media_edit_url(self, nodeID: str = None) -> bool:
@@ -57,15 +66,15 @@ class DrupalConnection():
 			log.fatal(f"[DrupalConnection.load_media_edit_url()] Calling attribute withoug nodeID not possible")
 		if(type(nodeID) != str):
 			nodeID = str(nodeID)
-		return browser.load_url(self._base_url + DC.get('server.media_edit_prefix') + nodeID + DC.get('server.media_edit_postfix'))
+		return browser.load_url(self._base_url + DC.get('server.media_edit_prefix') + nodeID + DC.get('server.media_edit_postfix'), lang = self._default_language, view = 'media_edit')
 
 
-	def load_media_translation_url(self, nodeID: str = None):
+	def load_media_translation_edit_url(self, nodeID: str = None, lang: str = None):
 		if(not nodeID):
 			log.fatal(f"[DrupalConnection.load_media_translation_url()] Calling attribute withoug nodeID not possible")
 		if(type(nodeID) != str):
 			nodeID = str(nodeID)
-		return browser.load_url(self._base_url + DC.get('server.media_edit_prefix') + nodeID + DC.get('server.media_translations_postfix'))
+		return browser.load_url(self._server_url + '/' + lang + DC.get('server.media_edit_prefix') + nodeID + DC.get('server.media_translations_postfix'), lang = self._default_language, view = 'media_edit_translation')
 
 
 	def _login(self):
@@ -84,7 +93,7 @@ class DrupalConnection():
 			login_url_prefix = self._basic_authentication_username + ':' + self._basic_authentication_password + '@'
 		login_url = DC.get('server.proto') + login_url_prefix + self._url + DC.get('server.default_language_uri_prefix') + DC.get('server.login_uri')
 		log.debug(f"[DrupalConnection._login()] Trying to login at server URL: {login_url}")
-		browser.load_url(login_url)
+		browser.load_url(login_url, lang = DC.get('server.default_language'), view = 'login')
 		browser.interact(key = "login.username", value = self._username)
 		browser.interact(key = "login.password", value = self._password)
 		browser.interact(key = "login.submit")
