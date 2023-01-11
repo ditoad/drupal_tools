@@ -6,7 +6,12 @@ from SKU2NodeID import SKU2NodeID
 
 SKU_file = "./mexico_sku_list.txt"
 output_file = "SKUs_and_nodeIDs.txt"
+default_locale = 'en-int'
+source_locale = 'es-ES'
+source_language = 'es'
+target_locale = 'es-MX'
 SKUs = []
+# SKUs = [10302, 10370]
 SKU_2_NodeID = {}
 NodeID_2_SKU = {}
 sku_line_count = 0
@@ -43,6 +48,12 @@ for sku in SKUs:
 	if(not nodeID):
 		error_logger.error(f"Couldn't find node ID for SKU {sku}")
 		continue
+	try:
+		oFile.write(f"sku={sku} nodeID={nodeID}\n")
+	except Exception as e:
+		error_logger.fatal(f"Couldn't write 'sku={sku} nodeID={nodeID}' into output file '{output_file}'")
+	logger.info(f"Found node ID {nodeID} for SKU {sku}")
+
 	SKU_2_NodeID[sku] = nodeID
 	NodeID_2_SKU[nodeID] = sku
 
@@ -56,23 +67,41 @@ for sku in SKUs:
 
 
 	en_int_moderation_status = CN.get_moderation_status()
-	es_translation_status = CN.get_translation_status(lang = 'es')
-	es_ES_translation_status = CN.get_translation_status(lang = 'es-ES')
-	es_MX_translation_status = CN.get_translation_status(lang = 'es-MX')
+	es_translation_status = CN.get_translation_status(lang = source_language)
+	es_ES_translation_status = CN.get_translation_status(lang = source_locale)
+	es_MX_translation_status = CN.get_translation_status(lang = target_locale)
 
 	print(f"\nNode: {nodeID}")
 	print("--------------")
-	print(f"en-int: {en_int_moderation_status}")
-	print(f"es: {es_translation_status}")
-	print(f"es-ES: {es_ES_translation_status}")
-	print(f"es-MX: {es_MX_translation_status}")
+	print(f"{default_locale}: {en_int_moderation_status}")
+	print(f"{source_language}: {es_translation_status}")
+	print(f"{source_locale}: {es_ES_translation_status}")
+	print(f"{target_locale}: {es_MX_translation_status}")
 
 
+	if(es_MX_translation_status == 'not_translated'):
+		logger.info(f"SKU {sku}: not translated yet. Trying to create translation...")
+		if(es_ES_translation_status == 'published'):
+			CN.add_translation(target_lang = target_locale, src_lang = source_locale, moderation_status = 'published')
+			logger.info(f"SKU {sku}: created translation from '{source_locale}' in '{target_locale}' and published it")
+		elif(es_translation_status == 'published'):
+			CN.add_translation(target_lang = target_locale, src_lang = source_language, moderation_status = 'published')
+			logger.info(f"SKU {sku}: created translation from '{source_language}' in '{target_locale}' and published it")
+		elif(en_int_moderation_status != 'not_translated'):
+			CN.add_translation(target_lang = default_locale, src_lang = source_language, moderation_status = 'published')
+			logger.info(f"SKU {sku}: created translation from '{default_locale}' in '{target_locale}' and published it")
+		else:
+			logger.error(f"SKU {sku}: couldn't create translation. No suitable source translation found.")
+			error_logger.error(f"SKU {sku} didn't have any suitable translation.")
+			continue
 
+	# else we can just publish the existing, but not yet published, es-MX version
+	elif(es_MX_translation_status != 'published'):
+		CN.set_translation_moderation_status(lang = target_locale, status = 'published')
+		CN.save()
+		logger.info(f"SKU {sku}: published pre-existing translation for '{target_locale}'")
 
-	try:
-		oFile.write(f"sku={sku} nodeID={nodeID}\n")
-	except Exception as e:
-		error_logger.fatal(f"Couldn't write 'sku={sku} nodeID={nodeID}' into output file '{output_file}'")
-	logger.info(f"Found node ID {nodeID} for SKU {sku}")
+	elif(es_MX_translation_status == 'published'):
+		logger.info(f"SKU {sku}: already published in '{target_locale}'. Nothing to do")
+
 oFile.close()

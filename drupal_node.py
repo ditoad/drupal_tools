@@ -50,7 +50,7 @@ class DrupalNode():
 				self._read_node_translations()
 
 
-	def add_translation(self, target_lang: str, src_lang: str = 'en-int', moderation_status: str = 'draft'):
+	def add_translation(self, target_lang: str, src_lang: str = DC.get('server.default_language'), moderation_status: str = 'draft'):
 		"this method creates a translation of the node in a passed language (if it doesn't already exist) based on a passed language, language/country version"
 		if(not self.is_translatable()):
 			log.fatal(f"[DrupalNode.add_translation()] The node's ({self._nodeID}) content type '{self.meta['node_type']}' is not translatable. Translatable content and media types are: {DC.get('server.translatable_content_types')}")
@@ -83,11 +83,7 @@ class DrupalNode():
 			self.translations['by_status'][moderation_status].append(target_lang)
 		else:
 			self.translations['by_status'][moderation_status] = [target_lang]
-		if(self.isMedia):
-			browser.interact(key = 'nodes.interactions.save_media')
-		else:
-			browser.interact(key = 'nodes.interactions.save_node')
-
+		
 
 	def delete_translation(self, lang: str) -> bool:
 		"This attribute deletes the passed target language's translation (if present). The target language can not be the server's default language, because that deletes the node with all its translations at once. Use delete_node() for that."
@@ -207,6 +203,20 @@ class DrupalNode():
 		DConn.load_node_edit_url(nodeID = self._nodeID, lang = lang)
 
 
+	def set_translation_title(self, target_lang: str, title: str):
+		if(not target_lang):
+			log.fatal(f"[DrupalNode.set_translation_title_from_source_language()] No target language passed.")
+		self.translations['by_language']['title'][target_lang] = title
+
+
+	def set_translation_title_from_source_language(self, src_lang: str, target_lang: str):
+		if(not src_lang):
+			log.fatal(f"[DrupalNode.set_translation_title_from_source_language()] No source language passed.")
+		if(not target_lang):
+			log.fatal(f"[DrupalNode.set_translation_title_from_source_language()] No target language passed.")
+		self.translations['by_language']['title'][target_lang] = self.translations['by_language']['title'][src_lang]
+
+
 	def _read_node_meta_data(self):
 		"reads the node url in edit mode and extracts all meta data from the side bar"
 		self.load_edit_page()
@@ -293,6 +303,10 @@ class ContentNode(DrupalNode):
 			super().__init__(nodeID = nodeID, isMedia = False)
 
 
+	def add_translation(self, target_lang: str, src_lang: str = DC.get('server.default_language'), moderation_status: str = 'draft'):
+		super().add_translation(target_lang = target_lang, src_lang = src_lang, moderation_status = moderation_status)
+		self.save()
+
 	def draft(self):
 		self.set_moderation_status("draft")
 
@@ -322,7 +336,14 @@ class ContentNode(DrupalNode):
 			log.fatal(f"[DrupalNode.set_moderation_status()] Passed moderation status '{status}' is not in the list of configured moderation status, which are: '{DC.get('server.moderation_status').keys()}'")
 		sel = Select(browser.get_element(key = 'nodes.interactions.change_status', strict = True))
 		sel.select_by_value(status)
-		self.meta.update({'moderation_status': status})
+		if(browser.get_view() == 'node_edit'):
+			self.meta.update({'moderation_status': status})
+		elif(browser.get_view() == 'node_edit_translation'):
+			lang = browser.get_language()
+			current_status = self.translations['by_language'][lang]
+			self.translations['by_status'][current_status].pop(self.translations['by_status'][current_status].index(lang))
+			self.translations['by_status'][status].append(lang)
+			self.translations['by_language'][lang] = status
 
 
 	def set_translation_moderation_status(self, lang: str = None, status: str = 'draft'):
@@ -330,8 +351,8 @@ class ContentNode(DrupalNode):
 			log.fatal(f"[DrupalNode.set_translation_moderation_status()] No language passed for setting translation status for Drupal node id {self._nodeID}")
 		if(not status in DC.get('server.moderation_status')):
 			log.fatal(f"[DrupalNode.set_translation_moderation_status()] Passed moderation status '{status}' is not in the list of configured moderation status, which are: '{DC.get('server.moderation_status').keys()}'")
-		sel = Select(browser.get_element(key = 'nodes.interactions.change_status', strict = True))
-		sel.select_by_value(status)
+		self.load_translation_edit_page(lang = lang)
+		self.set_moderation_status(status = status)
 
 
 	def save(self):
