@@ -80,20 +80,8 @@ for sku in SKUs:
 
 
 	if(es_MX_translation_status == 'not_translated'):
-		logger.info(f"SKU {sku}: not translated yet. Trying to create translation...")
-		if(es_ES_translation_status == 'published'):
-			CN.add_translation(target_lang = target_locale, src_lang = source_locale, moderation_status = 'published')
-			logger.info(f"SKU {sku}: created translation from '{source_locale}' in '{target_locale}' and published it")
-		elif(es_translation_status == 'published'):
-			CN.add_translation(target_lang = target_locale, src_lang = source_language, moderation_status = 'published')
-			logger.info(f"SKU {sku}: created translation from '{source_language}' in '{target_locale}' and published it")
-		elif(en_int_moderation_status != 'not_translated'):
-			CN.add_translation(target_lang = default_locale, src_lang = source_language, moderation_status = 'published')
-			logger.info(f"SKU {sku}: created translation from '{default_locale}' in '{target_locale}' and published it")
-		else:
-			logger.error(f"SKU {sku}: couldn't create translation. No suitable source translation found.")
-			error_logger.error(f"SKU {sku} didn't have any suitable translation.")
-			continue
+		error_logger.error(f"SKU {sku}: not translated for '{target_locale}'. Moderation status en-int: '{en_int_moderation_status}' -- moderation status es: '{es_translation_status}' -- moderation status es-ES: '{es_ES_translation_status}' -- ")
+		continue
 
 	# else we can just publish the existing, but not yet published, es-MX version
 	elif(es_MX_translation_status != 'published'):
